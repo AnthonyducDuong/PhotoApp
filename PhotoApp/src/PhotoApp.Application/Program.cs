@@ -9,6 +9,7 @@ using PhotoApp.Application.Configurations;
 using PhotoApp.Application.Extensions;
 using PhotoApp.Application.Middlewares;
 using PhotoApp.Domain.Constants;
+using PhotoApp.Infrastructure.Contexts;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -81,6 +82,8 @@ try
     app.UseAuthorization();
 
     app.MapControllers();
+
+    ApplicationDbInitializer.Seed(app);
 
     //HealthCheck Middleware
     app.MapHealthChecks("api/health", new HealthCheckOptions()
