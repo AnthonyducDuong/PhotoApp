@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PhotoApp.Infrastructure.Entities
+namespace PhotoApp.Domain.Enums
 {
-    internal class AccountEntity
+    public enum Roles
     {
+        ADMIN = 1,
+        USER = 2,
     }
 }
