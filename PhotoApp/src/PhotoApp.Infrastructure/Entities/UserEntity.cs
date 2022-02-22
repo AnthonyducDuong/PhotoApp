@@ -33,6 +33,19 @@ namespace PhotoApp.Infrastructure.Entities
         [DataType(DataType.Password, ErrorMessage = "Password is invalid")]
         public string? Password { get; set; }
 
+        // Relationship
+        public ICollection<PhotoEntity>? photoEntities { get; set; }
+
+        public IList<LikePhotoEntity>? likePhotoEntities { get; set; }
+
+        public IList<DislikePhotoEntity>? dislikePhotoEntities { get; set; }
+
+        public ICollection<CommentEntity>? commentEntities { get; set; }
+
+        public IList<LikeCommentEntity>? likeCommentEntities { get; set; }
+
+        public IList<DislikeCommentEntity>? dislikeCommentEntities { get; set; }
+
         // Foreign Key
         public int RoleId { get; set; }
         public RoleEntity? RoleEntity { get; set; }

@@ -10,6 +10,10 @@ namespace PhotoApp.Application.Controllers.V1
     [Produces("application/json")]
     public class HeartBeatController : ControllerBase
     {
+        /// <summary>
+        /// Heart Beat Controller
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Route("ping")]
         [ProducesResponseType(StatusCodes.Status200OK)]
