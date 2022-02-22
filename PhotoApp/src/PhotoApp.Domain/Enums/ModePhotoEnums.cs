@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace PhotoApp.Domain.Enums
 {
-    public enum Roles
+    public enum ModePhotoEnums
     {
-        ADMIN = 1,
-        USER = 2,
+        PUBLIC,
+        PRIVATE,
     }
 }
