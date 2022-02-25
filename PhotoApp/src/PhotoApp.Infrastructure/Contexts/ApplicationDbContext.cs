@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PhotoApp.Domain.Enums;
 using PhotoApp.Infrastructure.Constants;
 using PhotoApp.Infrastructure.Entities;
@@ -10,56 +12,71 @@ using System.Threading.Tasks;
 
 namespace PhotoApp.Infrastructure.Contexts
 {
-    public  class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         #region DbSet
         // Role Entity
-        public virtual DbSet<RoleEntity> RoleEntities { get; set; }
+       /* public virtual DbSet<RoleEntity>? RoleEntities { get; set; }*/
 
         // User Entity
-        public virtual DbSet<UserEntity> UserEntities { get; set; }
-
+        /*public virtual DbSet<UserEntity>? UserEntities { get; set; }*/
+        
         // Photo Entity
-        public virtual DbSet<PhotoEntity> PhotoEntities { get; set; }
+        public virtual DbSet<PhotoEntity>? PhotoEntities { get; set; }
 
         // LikePhoto Entity
-        public virtual DbSet<LikePhotoEntity> LikePhotoEntities { get; set; }
+        public virtual DbSet<LikePhotoEntity>? LikePhotoEntities { get; set; }
 
         // DislikePhoto Entity
-        public virtual DbSet<DislikePhotoEntity> DislikePhotoEntities { get; set; }
+        public virtual DbSet<DislikePhotoEntity>? DislikePhotoEntities { get; set; }
 
         // Comment Entity
-        public virtual DbSet<CommentEntity> CommentEntities { get; set; }
+        public virtual DbSet<CommentEntity>? CommentEntities { get; set; }
 
         // LikeComment Entity
-        public virtual DbSet<LikeCommentEntity> LikeCommentEntities { get; set;}
+        public virtual DbSet<LikeCommentEntity>? LikeCommentEntities { get; set;}
 
         //DislikeComment Entity
-        public virtual DbSet<DislikeCommentEntity> DislikeCommentEntities { get; set;}
+        public virtual DbSet<DislikeCommentEntity>? DislikeCommentEntities { get; set;}
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // override identity model
+            base.OnModelCreating(modelBuilder);
+
             // Role Entity
-            modelBuilder.Entity<RoleEntity>(entity =>
+            /*modelBuilder.Entity<RoleEntity>(entity =>
             {
 
                 entity.ToTable("Role");
                 entity.HasKey(k => k.Id);
-            });
+            });*/
 
             // User Entity
-            modelBuilder.Entity<UserEntity>(entity => {
+            /*modelBuilder.Entity<UserEntity>(entity => {
                 entity.ToTable("User");
                 entity.HasKey(k => k.Id);
                 entity.HasOne<RoleEntity>(r => r.RoleEntity)
                       .WithMany(u => u.userEntities)
                       .HasForeignKey(r => r.RoleId)
                       .HasConstraintName("Fk_User_Role");
-            });
+            });*/
 
+            // Remove the "Aspnet" prefix from all of the primary tables
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                var tableName = entityType.GetTableName();
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                if (tableName.StartsWith("AspNet"))
+                {
+                    entityType.SetTableName(tableName.Substring(6));
+                }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+            }
+ 
             // Photo Entity
             modelBuilder.Entity<PhotoEntity>(entity => {
                 entity.ToTable("Photo");
@@ -72,7 +89,7 @@ namespace PhotoApp.Infrastructure.Contexts
                       .HasForeignKey(u => u.UserId)
                       .HasConstraintName("Fk_Photo_User");
             });
-
+            
             // LikePhoto Entity
             modelBuilder.Entity<LikePhotoEntity>(entity => {
                 entity.ToTable("LikePhoto");
@@ -168,6 +185,9 @@ namespace PhotoApp.Infrastructure.Contexts
                       .HasConstraintName("Fk_DislikeComment_User")
                       .OnDelete(DeleteBehavior.NoAction);
             });
+
+            // Create seed data for role entity
+            RoleDbInitializer.Seed(modelBuilder);
         }
     }
 }

@@ -83,9 +83,10 @@ try
 
     app.MapControllers();
 
-    ApplicationDbInitializer.Seed(app);
+    // Create seed Role data 
+    // ApplicationDbInitializer.Seed(app);
 
-    //HealthCheck Middleware
+    // HealthCheck Middleware
     app.MapHealthChecks("api/health", new HealthCheckOptions()
     {
         Predicate = _ => true,
