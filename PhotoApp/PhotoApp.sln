@@ -7,17 +7,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5A008A75-074
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{800B5AFE-8D1F-47EB-B6AF-FB38E239BEBB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoApp.Application", "src\PhotoApp.Application\PhotoApp.Application.csproj", "{42437615-C676-468F-9D16-545C0D7145D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoApp.Application", "src\PhotoApp.Application\PhotoApp.Application.csproj", "{42437615-C676-468F-9D16-545C0D7145D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoApp.Domain", "src\PhotoApp.Domain\PhotoApp.Domain.csproj", "{ED87812A-8CB4-42DB-9EFE-A039D7552B0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoApp.Domain", "src\PhotoApp.Domain\PhotoApp.Domain.csproj", "{ED87812A-8CB4-42DB-9EFE-A039D7552B0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoApp.Infrastructure", "src\PhotoApp.Infrastructure\PhotoApp.Infrastructure.csproj", "{BC9EE5EA-B5B6-44E1-8833-732BEB22CC60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoApp.Infrastructure", "src\PhotoApp.Infrastructure\PhotoApp.Infrastructure.csproj", "{BC9EE5EA-B5B6-44E1-8833-732BEB22CC60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoApp.Application.Tests", "tests\PhotoApp.Application.Tests\PhotoApp.Application.Tests.csproj", "{6FA9BE43-E7EB-4E96-81E6-B4BCF1168CBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoApp.Application.Tests", "tests\PhotoApp.Application.Tests\PhotoApp.Application.Tests.csproj", "{6FA9BE43-E7EB-4E96-81E6-B4BCF1168CBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoApp.Domain.Tests", "tests\PhotoApp.Domain.Tests\PhotoApp.Domain.Tests.csproj", "{5ACF1A35-995D-48E8-B272-2BFF68E31E3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoApp.Domain.Tests", "tests\PhotoApp.Domain.Tests\PhotoApp.Domain.Tests.csproj", "{5ACF1A35-995D-48E8-B272-2BFF68E31E3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoApp.Infrastructure.Tests", "tests\PhotoApp.Infrastructure.Tests\PhotoApp.Infrastructure.Tests.csproj", "{3B64541B-BFD5-4268-AC36-53BB74B03CBB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoApp.Infrastructure.Tests", "tests\PhotoApp.Infrastructure.Tests\PhotoApp.Infrastructure.Tests.csproj", "{3B64541B-BFD5-4268-AC36-53BB74B03CBB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{41A6BA18-00DC-47C0-840D-81630A2DFF33}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,21 +1,16 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using PhotoApp.Infrastructure.Entities;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Identity;
 
-namespace PhotoApp.Infrastructure.Entities
+namespace PhotoApp.Infrastructure.Contexts
 {
-    public class UserEntity : IdentityUser<Guid>
+    public class ApplicationUser : IdentityUser
     {
-       /* [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Required(ErrorMessage = "UserId is invalid")]
-        public Guid Id { get; init; }*/
-
         [Required(ErrorMessage = "First name is invalid")]
         [StringLength(50, ErrorMessage = "Your First Name can contain only 20 characters")]
         public string? FirstName { get; set; }
@@ -25,14 +20,6 @@ namespace PhotoApp.Infrastructure.Entities
         public string? LastName { get; set; }
 
         public string? Gender { get; set; }
-
-        /*[Required(ErrorMessage = "Email is invalid")]
-        [DataType(DataType.EmailAddress, ErrorMessage = "Email is invalid")]
-        public string? Email { get; set; }*/
-
-        /*[Required(ErrorMessage = "Password is invalid")]
-        [DataType(DataType.Password, ErrorMessage = "Password is invalid")]
-        public string? Password { get; set; }*/
 
         // Relationship
         public ICollection<PhotoEntity>? photoEntities { get; set; }
@@ -48,7 +35,7 @@ namespace PhotoApp.Infrastructure.Entities
         public IList<DislikeCommentEntity>? dislikeCommentEntities { get; set; }
 
         // Foreign Key
-        /*public int RoleId { get; set; }
+       /* public int RoleId { get; set; }
         public RoleEntity? RoleEntity { get; set; }*/
     }
 }

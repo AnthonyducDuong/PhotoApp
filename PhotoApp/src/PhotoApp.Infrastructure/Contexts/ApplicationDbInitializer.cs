@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿/*using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using PhotoApp.Infrastructure.Constants;
 using PhotoApp.Infrastructure.Entities;
@@ -19,21 +20,28 @@ namespace PhotoApp.Infrastructure.Contexts
                 var context = serviceScope.ServiceProvider.GetService<ApplicationDbContext>();
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-                if (!context.RoleEntities.Any())
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                if (!context.Roles.Any())
                 {
-                    context.RoleEntities.AddRange(new RoleEntity()
+                    context.Roles.AddRange(new RoleEntity()
                     {
-                        Type = RoleConstants.ROLE_ADMIN,
+                        Id = Guid.NewGuid(),
+                        Name = RoleConstants.ROLE_ADMIN,
+                        ConcurrencyStamp = "1",
+                        NormalizedName = "Admin",
                     },
                     new RoleEntity()
                     {
-                        Type = RoleConstants.ROLE_USER,
+                        Id = Guid.NewGuid(),
+                        Name = RoleConstants.ROLE_USER,
+                        ConcurrencyStamp = "2",
+                        NormalizedName = "User",
                     });
 
                     context.SaveChanges();
                 }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
             }
         }
     }
 }
+*/
