@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PhotoApp.Domain.Interfaces.IGeneric
+namespace PhotoApp.Domain.Interfaces.IRepositories.IGeneric
 {
     public interface IGenericRepository<T> where T : class
     {
@@ -14,8 +15,10 @@ namespace PhotoApp.Domain.Interfaces.IGeneric
 
         Task<bool> Update(T entity);
 
-        Task<IEnumerable<T>> GetAll();
+        Task<IEnumerable<T>> All();
 
-        Task<IEnumerable<T>> GetById(Guid Id);
+        Task<T?> GetById(Guid Id);
+
+        Task<IEnumerable<T>> Find(Expression<Func<T, bool>> predicate);
     }
 }

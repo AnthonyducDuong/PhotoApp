@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PhotoApp.Domain.Interfaces.IConfiguration;
+using PhotoApp.Infrastructure.Configuration;
 using PhotoApp.Infrastructure.Contexts;
 using PhotoApp.Infrastructure.Entities;
 using System.Text;
@@ -69,6 +71,7 @@ namespace PhotoApp.Application
 
             /*services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IPhotoRepository, PhotoRepository>();*/
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddHttpClient();
 
