@@ -1,8 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using PhotoApp.Domain.Constants;
 using PhotoApp.Domain.Interfaces.IRepositories;
+using PhotoApp.Domain.Interfaces.IServices;
 using PhotoApp.Domain.Models;
 using PhotoApp.Domain.Wrappers;
 using PhotoApp.Infrastructure.Contexts;
@@ -19,9 +23,11 @@ namespace PhotoApp.Infrastructure.Repositories
     public class UserRepository : GenericRepository<UserEntity, UserModel>, IUserRepository<UserEntity, UserModel>
     {
         private readonly UserManager<UserEntity> _userManager;
+        private readonly IConfiguration _configuration;
+        private readonly IMailService _mailService;
 
         public UserRepository(ApplicationDbContext applicationDbContext, ILogger logger
-            , IMapper mapper, UserManager<UserEntity> userManager) 
+            , IMapper mapper, UserManager<UserEntity> userManager, IConfiguration configuration, IMailService mailService) 
             : base(applicationDbContext, logger, mapper) 
         {
             if (applicationDbContext == null)
@@ -29,6 +35,8 @@ namespace PhotoApp.Infrastructure.Repositories
                 throw new ArgumentNullException("ApplicationDbContext cannot be null.");
             }
             this._userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            this._configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            this._mailService = mailService ?? throw new ArgumentNullException(nameof(mailService));
         }
 
         // Override
@@ -97,25 +105,63 @@ namespace PhotoApp.Infrastructure.Repositories
 
         public async Task<Response<UserModel>> RegisterUserAsync(UserModel model)
         {
+            Response<UserModel> response = new Response<UserModel>();
             if (model == null)
             {
                 throw new NullReferenceException("Reigster Model is null");
             }
 
+            if (model.Password != model.ConfirmPassword)
+            {
+                response.Success = false;
+                response.Message = "Confirm password doesn't match password";
+                response.Data = model;
+            }
+
             try
             {
+                // Map model to entity => to add in database
                 UserEntity userEntity = this._mapper.Map<UserEntity>(model);
-                System.Console.WriteLine(userEntity);
-                IdentityResult identityResult = await this._userManager.CreateAsync(userEntity, model.Password);
-                Response<UserModel> response = new Response<UserModel>();
-                if (identityResult.Succeeded)
+
+                // User IUserManager in Identity -- hash password
+                IdentityResult createUserResult = await this._userManager.CreateAsync(userEntity, model.Password);
+                IdentityResult addToRoleResult = await this._userManager.AddToRoleAsync(userEntity, RoleConstants.ROLE_USER);
+
+                if (createUserResult.Succeeded)
                 {
+                    /* response.Success = true;
+                     response.Message = "Success";
+                     response.Data = model;
+                     return response;*/
+
+                    // handle send mail confirm
+                    var confirmEmailToken = await this._userManager.GenerateEmailConfirmationTokenAsync(userEntity);
+                    
+                    var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+                    var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
+
+                    string url = $"{this._configuration["AppUrl"]}/api/auth/confirmemail?userid={userEntity.Id}&token={validEmailToken}";
+
+                    await this._mailService.SendEmailAsync(model.Email, "Confirm your email", $"<h1>Welcome to Auth Demo</h1>" +
+                    $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
+
                     response.Success = true;
-                    response.Message = "thành công";
+                    response.Message = "Success";
+                    response.Data = model;
                     return response;
                 }
+
+                // Use stringbuilder -- Memory heap
+                StringBuilder errors = new StringBuilder();
+                foreach (var item in createUserResult.Errors)
+                {
+                    errors.Append(item.Code.ToString());
+                    errors.Append(": ");
+                    errors.Append(item.Description.ToString());
+                }
+
                 response.Success = false;
-                response.Message = identityResult.Errors.ToString();
+                response.Message = errors.ToString();
                 return response;
             }
             catch (Exception ex)
@@ -124,6 +170,41 @@ namespace PhotoApp.Infrastructure.Repositories
                 this._logger.LogError($"Can't register account, Error Message = {ex.Message}");
                 throw;
             }
+        }
+
+        public async Task<Response<UserModel>> ConfirmEmailAsync(string UserId, string Token)
+        {
+            UserEntity userEntity = await this._userManager.FindByIdAsync(UserId);
+             
+            if (userEntity == null)
+            {
+                return new Response<UserModel>()
+                {
+                    Success = false,
+                    Message = "User not existed in system",
+                };
+            }
+
+            var decodedToken = WebEncoders.Base64UrlDecode(Token);
+            string normalToken = Encoding.UTF8.GetString(decodedToken);
+
+            IdentityResult confirmEmailResult = await this._userManager.ConfirmEmailAsync(userEntity, normalToken);
+
+            if (confirmEmailResult.Succeeded)
+            {
+                return new Response<UserModel>()
+                {
+                    Success = true,
+                    Message = "Email confirmed successfully",
+                };
+            }
+
+            return new Response<UserModel>()
+            {
+                Success = false,
+                Message = "Can't confirm email",
+                Errors = confirmEmailResult.Errors.Select(s => s.Description),
+            };
         }
     }
 }

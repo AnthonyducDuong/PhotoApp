@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace PhotoApp.Domain.Interfaces.IServices
 {
-    public interface IUserService
+    /*public interface IUserService
     {
         Task<bool> Add(UserModel model);
 
@@ -25,5 +25,5 @@ namespace PhotoApp.Domain.Interfaces.IServices
         Task<IEnumerable<UserModel>> Find(Expression<Func<UserModel, bool>> predicate);
 
         public Task<Response<UserModel>> RegisterUserAsync(UserModel userModel);
-    }
+    }*/
 }

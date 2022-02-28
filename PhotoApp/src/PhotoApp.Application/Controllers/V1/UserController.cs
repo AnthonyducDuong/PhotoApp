@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PhotoApp.Domain.Constants;
-using PhotoApp.Domain.Interfaces.IServices;
 using PhotoApp.Domain.Models;
 using PhotoApp.Domain.Wrappers;
 using PhotoApp.Infrastructure.Configuration;
@@ -14,18 +13,21 @@ namespace PhotoApp.Application.Controllers.V1
     [Produces("application/json")]
     public class UserController : ControllerBase
     {
-        private readonly IUserService _userService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public UserController(IUserService userService, IUnitOfWork unitOfWork)
+        public UserController(IUnitOfWork unitOfWork)
         {
-            this._userService = userService;
             this._unitOfWork = unitOfWork;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Dangki(UserModel userModel)
+        public async Task<IActionResult> Dangki([FromBody]UserModel userModel)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 var response = await this._unitOfWork.userRepository.RegisterUserAsync(userModel);

@@ -17,6 +17,10 @@ namespace PhotoApp.Domain.Interfaces.IRepositories
         // Get user by email
         public Task<TModel> GetUserByEmail(string email);
 
+        // Register for role user
         public Task<Response<TModel>> RegisterUserAsync(TModel model);
+
+        // Confirm email
+        public Task<Response<TModel>> ConfirmEmailAsync(string UserId, string Token);
     }
 }

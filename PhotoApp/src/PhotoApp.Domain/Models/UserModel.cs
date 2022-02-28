@@ -32,5 +32,9 @@ namespace PhotoApp.Domain.Models
         [Required(ErrorMessage = "Password is invalid")]
         [DataType(DataType.Password, ErrorMessage = "Password is invalid")]
         public string? Password { get; set; }
+
+        [Required(ErrorMessage = "ConfirmPassword is invalid")]
+        [DataType(DataType.Password, ErrorMessage = "ConfirmPassword is invalid")]
+        public string? ConfirmPassword { get; set; }
     }
 }
