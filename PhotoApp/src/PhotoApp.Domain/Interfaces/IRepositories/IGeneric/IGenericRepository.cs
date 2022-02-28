@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace PhotoApp.Domain.Interfaces.IRepositories.IGeneric
 {
-    public interface IGenericRepository<T> where T : class
+    public interface IGenericRepository<TEntity, TModel> where TEntity : class where TModel : class
     {
-        Task<bool> Add(T entity);
+        Task<bool> Add(TModel model);
 
         Task<bool> Delete(Guid Id);
 
-        Task<bool> Update(T entity);
+        Task<bool> Update(TModel model);
 
-        Task<IEnumerable<T>> All();
+        Task<IEnumerable<TModel>> All();
 
-        Task<T?> GetById(Guid Id);
+        Task<TModel?> GetById(Guid Id);
 
-        Task<IEnumerable<T>> Find(Expression<Func<T, bool>> predicate);
+        Task<IEnumerable<TModel>> Find(Expression<Func<TEntity, bool>> predicate);
     }
 }

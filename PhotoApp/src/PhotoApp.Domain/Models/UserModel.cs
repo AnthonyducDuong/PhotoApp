@@ -16,7 +16,7 @@ namespace PhotoApp.Domain.Models
         public string? UserName { get; set; }
 
         [Required(ErrorMessage = "First name is invalid")]
-        [StringLength(50, ErrorMessage = "Your First Name can contain only 20 characters")]
+        [StringLength(50, ErrorMessage = "Your First Name can contain only 50 characters")]
         public string? FirstName { get; set; }
 
         [Required(ErrorMessage = "Last name is invalid")]

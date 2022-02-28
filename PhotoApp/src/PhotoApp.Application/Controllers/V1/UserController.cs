@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PhotoApp.Domain.Constants;
-using PhotoApp.Domain.Interfaces.IConfiguration;
+using PhotoApp.Domain.Interfaces.IServices;
+using PhotoApp.Domain.Models;
+using PhotoApp.Domain.Wrappers;
+using PhotoApp.Infrastructure.Configuration;
 
 namespace PhotoApp.Application.Controllers.V1
 {
@@ -11,18 +14,29 @@ namespace PhotoApp.Application.Controllers.V1
     [Produces("application/json")]
     public class UserController : ControllerBase
     {
+        private readonly IUserService _userService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public UserController(IUnitOfWork unitOfWork)
+        public UserController(IUserService userService, IUnitOfWork unitOfWork)
         {
-            _unitOfWork = unitOfWork;
+            this._userService = userService;
+            this._unitOfWork = unitOfWork;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Get()
+        [HttpPost]
+        public async Task<IActionResult> Dangki(UserModel userModel)
         {
-            var users = await this._unitOfWork.userRepository.All();
-            return Ok(users);
+            try
+            {
+                var response = await this._unitOfWork.userRepository.RegisterUserAsync(userModel);
+                await this._unitOfWork.CompleteAsync();
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Response<UserModel> response = new Response<UserModel> { Success = false, Message = ex.Message };
+                return BadRequest(response);
+            }
         }
     }
 }

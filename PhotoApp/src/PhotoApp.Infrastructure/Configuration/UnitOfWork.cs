@@ -1,13 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
-using PhotoApp.Domain.Interfaces.IConfiguration;
+﻿
+using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using PhotoApp.Domain.Interfaces.IRepositories;
+using PhotoApp.Domain.Models;
 using PhotoApp.Infrastructure.Contexts;
+using PhotoApp.Infrastructure.Entities;
 using PhotoApp.Infrastructure.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PhotoApp.Infrastructure.Configuration
 {
@@ -15,16 +14,27 @@ namespace PhotoApp.Infrastructure.Configuration
     {
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly ILogger _logger;
+        private readonly IMapper _mapper;
+        private readonly UserManager<UserEntity> _userManager;
 
-        public IUserRepository userRepository { get; private set; }
+        public IUserRepository<UserEntity, UserModel> userRepository { get; private set; }
 
-        public UnitOfWork(ApplicationDbContext applicationDbContext, ILoggerFactory loggerFactory)
+        public UnitOfWork(ApplicationDbContext applicationDbContext, ILoggerFactory loggerFactory
+            , IMapper mapper, UserManager<UserEntity> userManager)
         {
+            if (applicationDbContext == null)
+            {
+                throw new ArgumentNullException("Context argument cannot be null in UnitOfWork.");
+            }
+
             this._applicationDbContext = applicationDbContext;
             this._logger = loggerFactory.CreateLogger("logs");
+            this._mapper = mapper;
+            this._userManager = userManager;
 
-            this.userRepository = new UserRepository(applicationDbContext, this._logger);
+            this.userRepository = new UserRepository(applicationDbContext, this._logger, this._mapper, this._userManager);
         }
+
 
         public async Task CompleteAsync()
         {
@@ -33,7 +43,10 @@ namespace PhotoApp.Infrastructure.Configuration
 
         public void Dispose()
         {
-            this._applicationDbContext.Dispose();
+            if (this._applicationDbContext != null)
+            {
+                this._applicationDbContext.Dispose();
+            }
         }
     }
 }
