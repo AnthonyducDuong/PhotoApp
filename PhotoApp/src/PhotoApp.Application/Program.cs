@@ -75,7 +75,9 @@ try
         app.UseHsts();
     }
 
+#pragma warning disable ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
     app.ConfigureSwagger(builder.Services.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>());
+#pragma warning restore ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
 
     app.UseHttpsRedirection();
 
