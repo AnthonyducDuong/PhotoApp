@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PhotoApp.Infrastructure.Constants
+namespace PhotoApp.Domain.Constants
 {
     public class RoleConstants
     {

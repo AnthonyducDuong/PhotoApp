@@ -1,8 +1,10 @@
 ﻿
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PhotoApp.Domain.Interfaces.IRepositories;
+using PhotoApp.Domain.Interfaces.IServices;
 using PhotoApp.Domain.Models;
 using PhotoApp.Infrastructure.Contexts;
 using PhotoApp.Infrastructure.Entities;
@@ -16,23 +18,28 @@ namespace PhotoApp.Infrastructure.Configuration
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
         private readonly UserManager<UserEntity> _userManager;
+        private readonly IConfiguration _configuration;
+        private readonly IMailService _mailService;
 
         public IUserRepository<UserEntity, UserModel> userRepository { get; private set; }
 
         public UnitOfWork(ApplicationDbContext applicationDbContext, ILoggerFactory loggerFactory
-            , IMapper mapper, UserManager<UserEntity> userManager)
+            , IMapper mapper, UserManager<UserEntity> userManager, IConfiguration configuration, IMailService mailService)
         {
             if (applicationDbContext == null)
             {
                 throw new ArgumentNullException("Context argument cannot be null in UnitOfWork.");
             }
 
-            this._applicationDbContext = applicationDbContext;
+            this._applicationDbContext = applicationDbContext ?? throw new ArgumentNullException(nameof(applicationDbContext));
             this._logger = loggerFactory.CreateLogger("logs");
-            this._mapper = mapper;
-            this._userManager = userManager;
+            this._mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            this._userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            this._configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            this._mailService = mailService ?? throw new ArgumentNullException(nameof(mailService));
 
-            this.userRepository = new UserRepository(applicationDbContext, this._logger, this._mapper, this._userManager);
+            this.userRepository = new UserRepository(applicationDbContext, this._logger, this._mapper, 
+                this._userManager, this._configuration, this._mailService);
         }
 
 

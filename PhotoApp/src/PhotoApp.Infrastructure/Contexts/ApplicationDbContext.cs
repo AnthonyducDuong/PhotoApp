@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PhotoApp.Domain.Enums;
-using PhotoApp.Infrastructure.Constants;
 using PhotoApp.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;

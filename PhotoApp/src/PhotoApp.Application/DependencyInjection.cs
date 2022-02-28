@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PhotoApp.Domain.Interfaces.IServices;
+using PhotoApp.Domain.Services;
 using PhotoApp.Infrastructure.Configuration;
 using PhotoApp.Infrastructure.Contexts;
 using PhotoApp.Infrastructure.Entities;
@@ -74,6 +75,9 @@ namespace PhotoApp.Application
             services.AddScoped<IPhotoRepository, PhotoRepository>();*/
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             // services.AddScoped<IUserService, UserService>();
+
+            // SendGrid Mail service
+            services.AddTransient<IMailService, MailService>();
 
             services.AddHttpClient();
 

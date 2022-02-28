@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using PhotoApp.Domain.Interfaces.IRepositories;
-using PhotoApp.Domain.Interfaces.IServices;
 using PhotoApp.Domain.Models;
 using PhotoApp.Domain.Wrappers;
 using PhotoApp.Infrastructure.Configuration;
