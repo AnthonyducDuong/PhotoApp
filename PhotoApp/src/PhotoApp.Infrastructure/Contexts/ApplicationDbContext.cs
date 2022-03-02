@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using PhotoApp.Domain.Constants;
+using PhotoApp.Domain.Entities;
 using PhotoApp.Domain.Enums;
-using PhotoApp.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,6 +76,14 @@ namespace PhotoApp.Infrastructure.Contexts
                 }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
             }
+
+            // User Entity
+            modelBuilder.Entity<UserEntity>(entity =>
+            {
+                entity.HasIndex(u => u.Email).IsUnique();
+                entity.HasIndex(u => u.UserName).IsUnique();
+                entity.Property(u => u.Gender).HasDefaultValue(GenderConstants.MALE);
+            });
  
             // Photo Entity
             modelBuilder.Entity<PhotoEntity>(entity => {

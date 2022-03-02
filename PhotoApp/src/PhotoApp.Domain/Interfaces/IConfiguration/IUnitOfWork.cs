@@ -1,17 +1,15 @@
 ﻿using PhotoApp.Domain.Interfaces.IRepositories;
-using PhotoApp.Domain.Models;
-using PhotoApp.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PhotoApp.Infrastructure.Configuration
+namespace PhotoApp.Domain.Interfaces.IConfiguration
 {
     public interface IUnitOfWork
     {
-        IUserRepository<UserEntity, UserModel> userRepository { get; }
+        IUserRepository userRepository { get; }
 
         Task CompleteAsync();
 

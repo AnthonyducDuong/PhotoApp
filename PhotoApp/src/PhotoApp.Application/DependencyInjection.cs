@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PhotoApp.Domain.Entities;
+using PhotoApp.Domain.Interfaces.IConfiguration;
 using PhotoApp.Domain.Interfaces.IServices;
 using PhotoApp.Domain.Services;
 using PhotoApp.Infrastructure.Configuration;
 using PhotoApp.Infrastructure.Contexts;
-using PhotoApp.Infrastructure.Entities;
-using PhotoApp.Infrastructure.Services;
 using System.Text;
 
 namespace PhotoApp.Application
@@ -69,7 +69,9 @@ namespace PhotoApp.Application
                         ValidIssuer = configuration["Token:ValidIssuer"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Token:SceretKey"]))
                     };
-                });
+                    
+                })
+                .AddCookie();
 
             /*services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IPhotoRepository, PhotoRepository>();*/
@@ -78,6 +80,9 @@ namespace PhotoApp.Application
 
             // SendGrid Mail service
             services.AddTransient<IMailService, MailService>();
+
+            // Jwt service
+            services.AddTransient<IJwtService, JwtService>();
 
             services.AddHttpClient();
 

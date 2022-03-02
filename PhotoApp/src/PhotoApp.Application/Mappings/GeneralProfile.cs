@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using PhotoApp.Domain.Models;
-using PhotoApp.Infrastructure.Entities;
+using PhotoApp.Domain.Entities;
+using PhotoApp.Domain.Request;
 
 namespace PhotoApp.Application.Mappings
 {
@@ -8,7 +8,7 @@ namespace PhotoApp.Application.Mappings
     {
         public GeneralProfile()
         {
-            CreateMap<UserEntity, UserModel>().ReverseMap();
+            CreateMap<UserEntity, RegisterRequest>().ReverseMap();
         }
     }
 }

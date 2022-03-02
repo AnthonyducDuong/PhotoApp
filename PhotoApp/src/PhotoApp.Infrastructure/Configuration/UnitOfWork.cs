@@ -3,11 +3,11 @@ using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using PhotoApp.Domain.Entities;
+using PhotoApp.Domain.Interfaces.IConfiguration;
 using PhotoApp.Domain.Interfaces.IRepositories;
 using PhotoApp.Domain.Interfaces.IServices;
-using PhotoApp.Domain.Models;
 using PhotoApp.Infrastructure.Contexts;
-using PhotoApp.Infrastructure.Entities;
 using PhotoApp.Infrastructure.Repositories;
 
 namespace PhotoApp.Infrastructure.Configuration
@@ -20,11 +20,13 @@ namespace PhotoApp.Infrastructure.Configuration
         private readonly UserManager<UserEntity> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IMailService _mailService;
+        private readonly IJwtService _jwtService;
 
-        public IUserRepository<UserEntity, UserModel> userRepository { get; private set; }
+        public IUserRepository userRepository { get; private set; }
 
         public UnitOfWork(ApplicationDbContext applicationDbContext, ILoggerFactory loggerFactory
-            , IMapper mapper, UserManager<UserEntity> userManager, IConfiguration configuration, IMailService mailService)
+            , IMapper mapper, UserManager<UserEntity> userManager, IConfiguration configuration
+            , IMailService mailService, IJwtService jwtService)
         {
             if (applicationDbContext == null)
             {
@@ -37,9 +39,10 @@ namespace PhotoApp.Infrastructure.Configuration
             this._userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             this._configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this._mailService = mailService ?? throw new ArgumentNullException(nameof(mailService));
+            this._jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
 
-            this.userRepository = new UserRepository(applicationDbContext, this._logger, this._mapper, 
-                this._userManager, this._configuration, this._mailService);
+            this.userRepository = new UserRepository(applicationDbContext, this._logger, 
+                this._userManager, this._configuration, this._mailService, this._mapper, this._jwtService);
         }
 
 

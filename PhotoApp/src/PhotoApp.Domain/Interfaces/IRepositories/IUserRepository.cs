@@ -1,6 +1,8 @@
 ﻿
+using PhotoApp.Domain.Entities;
 using PhotoApp.Domain.Interfaces.IRepositories.IGeneric;
-using PhotoApp.Domain.Models;
+using PhotoApp.Domain.Request;
+using PhotoApp.Domain.Response;
 using PhotoApp.Domain.Wrappers;
 using System;
 using System.Collections.Generic;
@@ -10,17 +12,18 @@ using System.Threading.Tasks;
 
 namespace PhotoApp.Domain.Interfaces.IRepositories
 {
-    public interface IUserRepository<TEntity, TModel> : IGenericRepository<TEntity, TModel>
-        where TEntity : class
-        where TModel : class
+    public interface IUserRepository : IGenericRepository<UserEntity>
     {
         // Get user by email
-        public Task<TModel> GetUserByEmail(string email);
+        public Task<UserEntity> GetUserByEmail(string email);
 
         // Register for role user
-        public Task<Response<TModel>> RegisterUserAsync(TModel model);
+        public Task<Response<RegisterResponse>> RegisterUserAsync(RegisterRequest request);
 
         // Confirm email
-        public Task<Response<TModel>> ConfirmEmailAsync(string UserId, string Token);
+        public Task<Response<AuthenticateResponse>> ConfirmEmailAsync(string UserId, string Token);
+
+        // Login
+        public Task<Response<AuthenticateResponse>> LoginAsync(AuthenticateRequest model);
     }
 }

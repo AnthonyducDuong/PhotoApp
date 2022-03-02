@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PhotoApp.Infrastructure.Contexts;
 
@@ -11,9 +12,10 @@ using PhotoApp.Infrastructure.Contexts;
 namespace PhotoApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220302063215_updateDefaultValueGender")]
+    partial class updateDefaultValueGender
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -287,14 +289,14 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("21f7ad21-faa6-45a6-bf47-d025a8d5eec9"),
+                            Id = new Guid("023466e9-19f5-4dcf-bf58-9e78bff064e7"),
                             ConcurrencyStamp = "1",
                             Name = "ADMIN",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = new Guid("307be622-a878-470d-9829-baa2660b4075"),
+                            Id = new Guid("cf437388-2074-40ed-85da-fa72caa922da"),
                             ConcurrencyStamp = "2",
                             Name = "USER",
                             NormalizedName = "User"
@@ -371,10 +373,6 @@ namespace PhotoApp.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique()
-                        .HasFilter("[Email] IS NOT NULL");
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -382,10 +380,6 @@ namespace PhotoApp.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex("UserName")
-                        .IsUnique()
-                        .HasFilter("[UserName] IS NOT NULL");
 
                     b.ToTable("Users", (string)null);
                 });

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PhotoApp.Infrastructure.Entities
+namespace PhotoApp.Domain.Entities
 {
-    public class LikeCommentEntity
+    public class DislikeCommentEntity
     {
         // Foreign Key
         // User Entity
