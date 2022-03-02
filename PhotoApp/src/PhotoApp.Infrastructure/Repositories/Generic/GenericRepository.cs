@@ -13,17 +13,15 @@ using System.Threading.Tasks;
 
 namespace PhotoApp.Infrastructure.Repositories.Generic
 {
-    public class GenericRepository<TEntity, TModel> : IGenericRepository<TEntity, TModel> 
+    public class GenericRepository<TEntity> : IGenericRepository<TEntity> 
         where TEntity : class 
-        where TModel : class
     {
         protected ApplicationDbContext _applicationDbContext;
         protected readonly ILogger _logger;
         internal DbSet<TEntity> dbSet;
-        protected readonly IMapper _mapper;
+        private readonly IMapper _mapper;
 
-        public GenericRepository(ApplicationDbContext applicationDbContext, ILogger logger
-            , IMapper mapper)
+        public GenericRepository(ApplicationDbContext applicationDbContext, ILogger logger, IMapper mapper)
         {
             /*if (applicationDbContext == null)
             {
@@ -36,9 +34,8 @@ namespace PhotoApp.Infrastructure.Repositories.Generic
             this._mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public virtual async Task<bool> Add(TModel model)
+        public virtual async Task<bool> Add(TEntity entity)
         {
-            var entity = this._mapper.Map<TEntity>(model);
             await this.dbSet.AddAsync(entity);
             return true;
         }
@@ -48,27 +45,24 @@ namespace PhotoApp.Infrastructure.Repositories.Generic
             throw new NotImplementedException();
         }
 
-        public virtual async Task<IEnumerable<TModel>> Find(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<IEnumerable<TEntity>> Find(Expression<Func<TEntity, bool>> predicate)
         {
-            var entities = await this.dbSet.Where(predicate).ToListAsync();
-            return this._mapper.Map<IEnumerable<TModel>>(entities);
+            return await this.dbSet.Where(predicate).ToListAsync();
         }
 
-        public virtual async Task<IEnumerable<TModel>> All()
+        public virtual async Task<IEnumerable<TEntity>> All()
         {
-            var entities = await this.dbSet.ToListAsync().ConfigureAwait(false);
-            return this._mapper.Map<IEnumerable<TModel>>(entities);
+            return await this.dbSet.ToListAsync().ConfigureAwait(false);
         }
 
-        public virtual async Task<TModel?> GetById(Guid Id)
+        public virtual async Task<TEntity?> GetById(Guid Id)
         {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-            TEntity entity = await this.dbSet.FindAsync(Id);
+            return await this.dbSet.FindAsync(Id);
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-            return this._mapper.Map<TModel>(entity);
         }
 
-        public virtual Task<bool> Update(TModel model)
+        public virtual Task<bool> Update(TEntity model)
         {
             throw new NotImplementedException();
         }

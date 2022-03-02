@@ -5,14 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PhotoApp.Domain.Models
+namespace PhotoApp.Domain.Request
 {
-    public class UserModel
+    public class RegisterRequest
     {
         public Guid Id { get; init; }
 
         [Required(ErrorMessage = "Username is invalid")]
-        [StringLength(50, ErrorMessage = "Your Username can contain only 20 characters")]
+        [StringLength(50, ErrorMessage = "Your Username can contain only 50 characters")]
         public string? UserName { get; set; }
 
         [Required(ErrorMessage = "First name is invalid")]

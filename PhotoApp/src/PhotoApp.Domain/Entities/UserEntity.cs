@@ -7,14 +7,14 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 
-namespace PhotoApp.Infrastructure.Entities
+namespace PhotoApp.Domain.Entities
 {
     public class UserEntity : IdentityUser<Guid>
     {
-       /* [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Required(ErrorMessage = "UserId is invalid")]
-        public Guid Id { get; init; }*/
+        /* [Key]
+         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+         [Required(ErrorMessage = "UserId is invalid")]
+         public Guid Id { get; init; }*/
 
         [Required(ErrorMessage = "First name is invalid")]
         [StringLength(50, ErrorMessage = "Your First Name can contain only 20 characters")]

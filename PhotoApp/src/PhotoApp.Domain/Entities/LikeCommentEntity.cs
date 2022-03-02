@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PhotoApp.Infrastructure.Entities
+namespace PhotoApp.Domain.Entities
 {
-    public class LikePhotoEntity
+    public class LikeCommentEntity
     {
         // Foreign Key
         // User Entity
@@ -16,7 +14,7 @@ namespace PhotoApp.Infrastructure.Entities
         public UserEntity? UserEntity { get; set; }
 
         // Photo Entity
-        public Guid PhotoId { get; set; }
-        public PhotoEntity? PhotoEntity { get; set; }
+        public Guid CommentId { get; set; }
+        public CommentEntity? CommentEntity { get; set; }
     }
 }

@@ -5,12 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PhotoApp.Domain.Constants;
+using PhotoApp.Domain.Entities;
 using PhotoApp.Domain.Interfaces.IRepositories;
 using PhotoApp.Domain.Interfaces.IServices;
-using PhotoApp.Domain.Models;
+using PhotoApp.Domain.Request;
+using PhotoApp.Domain.Response;
 using PhotoApp.Domain.Wrappers;
 using PhotoApp.Infrastructure.Contexts;
-using PhotoApp.Infrastructure.Entities;
 using PhotoApp.Infrastructure.Repositories.Generic;
 using System;
 using System.Collections.Generic;
@@ -20,14 +21,17 @@ using System.Threading.Tasks;
 
 namespace PhotoApp.Infrastructure.Repositories
 {
-    public class UserRepository : GenericRepository<UserEntity, UserModel>, IUserRepository<UserEntity, UserModel>
+    public class UserRepository : GenericRepository<UserEntity>, IUserRepository
     {
         private readonly UserManager<UserEntity> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IMailService _mailService;
+        private readonly IMapper _mapper;
+        private readonly IJwtService _jwtService;
 
         public UserRepository(ApplicationDbContext applicationDbContext, ILogger logger
-            , IMapper mapper, UserManager<UserEntity> userManager, IConfiguration configuration, IMailService mailService) 
+               , UserManager<UserEntity> userManager, IConfiguration configuration
+            , IMailService mailService, IMapper mapper, IJwtService jwtService) 
             : base(applicationDbContext, logger, mapper) 
         {
             if (applicationDbContext == null)
@@ -37,37 +41,38 @@ namespace PhotoApp.Infrastructure.Repositories
             this._userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             this._configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this._mailService = mailService ?? throw new ArgumentNullException(nameof(mailService));
+            this._mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            this._jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
         }
 
         // Override
-        public override async Task<IEnumerable<UserModel>> All()
+        public override async Task<IEnumerable<UserEntity>> All()
         {
             try
             {
-                var userEntities = await this.dbSet.ToListAsync().ConfigureAwait(false);
-                return this._mapper.Map<IEnumerable<UserModel>>(userEntities);
+                return await this.dbSet.ToListAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 this._logger.LogError(ex, "{Repo} All function error", typeof(UserRepository));
-                return new List<UserModel>();
+                return new List<UserEntity>();
             }
         }
 
-        public override async Task<bool> Update(UserModel userModel)
+        public override async Task<bool> Update(UserEntity userEntity)
         {
             try
             {
-                var existingUser = await this.dbSet.Where(x => x.Id == userModel.Id)
+                var existingUser = await this.dbSet.Where(x => x.Id == userEntity.Id)
                                                     .FirstOrDefaultAsync();
 
                 if (existingUser == null)
-                    return await Add(userModel);
+                    return await Add(userEntity);
 
-                existingUser.UserName = userModel.UserName;
-                existingUser.FirstName = userModel.FirstName;
-                existingUser.LastName = userModel.LastName;
-                existingUser.Email = userModel.Email;
+                existingUser.UserName = userEntity.UserName;
+                existingUser.FirstName = userEntity.FirstName;
+                existingUser.LastName = userEntity.LastName;
+                existingUser.Email = userEntity.Email;
 
                 return true;
             }
@@ -98,56 +103,60 @@ namespace PhotoApp.Infrastructure.Repositories
             }
         }
 
-        public Task<UserModel> GetUserByEmail(string email)
+        public Task<UserEntity> GetUserByEmail(string email)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Response<UserModel>> RegisterUserAsync(UserModel model)
+        public async Task<Response<RegisterResponse>> RegisterUserAsync(RegisterRequest request)
         {
-            Response<UserModel> response = new Response<UserModel>();
-            if (model == null)
+            Response<RegisterResponse> response = new Response<RegisterResponse>();
+            if (request == null)
             {
-                throw new NullReferenceException("Reigster Model is null");
+                throw new NullReferenceException("User entity is null");
             }
 
-            if (model.Password != model.ConfirmPassword)
+            if (request.Password != request.ConfirmPassword)
             {
                 response.Success = false;
                 response.Message = "Confirm password doesn't match password";
-                response.Data = model;
             }
+
+            // map request to user entity
+            UserEntity userEntity = this._mapper.Map<UserEntity>(request);
 
             try
             {
-                // Map model to entity => to add in database
-                UserEntity userEntity = this._mapper.Map<UserEntity>(model);
-
                 // User IUserManager in Identity -- hash password
-                IdentityResult createUserResult = await this._userManager.CreateAsync(userEntity, model.Password);
+                IdentityResult createUserResult = await this._userManager.CreateAsync(userEntity, request.Password);
                 IdentityResult addToRoleResult = await this._userManager.AddToRoleAsync(userEntity, RoleConstants.ROLE_USER);
 
                 if (createUserResult.Succeeded)
                 {
-                    /* response.Success = true;
-                     response.Message = "Success";
-                     response.Data = model;
-                     return response;*/
-
                     // handle send mail confirm
                     var confirmEmailToken = await this._userManager.GenerateEmailConfirmationTokenAsync(userEntity);
                     
                     var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
                     var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
 
-                    string url = $"{this._configuration["AppUrl"]}/api/auth/confirmemail?userid={userEntity.Id}&token={validEmailToken}";
+                    string url = $"{this._configuration["AppUrl"]}/{ApiConstants.ServiceName}/v1/auth/confirmemail?userid={userEntity.Id}&token={validEmailToken}";
 
-                    await this._mailService.SendEmailAsync(model.Email, "Confirm your email", $"<h1>Welcome to Auth Demo</h1>" +
+#pragma warning disable CS8604 // Possible null reference argument.
+                    await this._mailService.SendEmailAsync(userEntity.Email, "Confirm your email", $"<h1>Welcome to Auth Demo</h1>" +
                     $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
+#pragma warning restore CS8604 // Possible null reference argument.
 
                     response.Success = true;
-                    response.Message = "Success";
-                    response.Data = model;
+                    response.Message = "Send mail confirm success";
+                    response.Data = new RegisterResponse
+                    {
+                        UserName = userEntity.UserName,
+                        FirstName = userEntity.FirstName,
+                        LastName = userEntity.LastName,
+                        Email = userEntity.Email,
+                        Role = RoleConstants.ROLE_USER,
+                        IsVerified = false,
+                    };
                     return response;
                 }
 
@@ -166,19 +175,18 @@ namespace PhotoApp.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //this._unitOfWork.Dispose();
                 this._logger.LogError($"Can't register account, Error Message = {ex.Message}");
                 throw;
             }
         }
 
-        public async Task<Response<UserModel>> ConfirmEmailAsync(string UserId, string Token)
+        public async Task<Response<AuthenticateResponse>> ConfirmEmailAsync(string UserId, string Token)
         {
             UserEntity userEntity = await this._userManager.FindByIdAsync(UserId);
              
             if (userEntity == null)
             {
-                return new Response<UserModel>()
+                return new Response<AuthenticateResponse>()
                 {
                     Success = false,
                     Message = "User not existed in system",
@@ -188,23 +196,109 @@ namespace PhotoApp.Infrastructure.Repositories
             var decodedToken = WebEncoders.Base64UrlDecode(Token);
             string normalToken = Encoding.UTF8.GetString(decodedToken);
 
-            IdentityResult confirmEmailResult = await this._userManager.ConfirmEmailAsync(userEntity, normalToken);
-
-            if (confirmEmailResult.Succeeded)
+            try
             {
-                return new Response<UserModel>()
+                // Confirm email
+                IdentityResult confirmEmailResult = await this._userManager.ConfirmEmailAsync(userEntity, normalToken);
+
+                if (confirmEmailResult.Succeeded)
                 {
-                    Success = true,
-                    Message = "Email confirmed successfully",
+                    // role user but need check
+                    int flag = 0; // role user
+                    if (await this._userManager.IsInRoleAsync(userEntity, RoleConstants.ROLE_ADMIN))
+                    {
+                        flag = 1;
+                    }
+
+                    return new Response<AuthenticateResponse>()
+                    {
+                        Success = true,
+                        Message = "Email confirmed successfully",
+                        Data = new AuthenticateResponse
+                        {
+                            Id = userEntity.Id,
+                            UserName = userEntity.UserName,
+                            FirstName = userEntity.FirstName,
+                            LastName = userEntity.LastName,
+                            Email = userEntity.Email,
+                            Role = flag == 0 ? RoleConstants.ROLE_USER : RoleConstants.ROLE_ADMIN,
+                            IsVerified = true,
+                            AccessToken = this._jwtService.GenerateAccessToken(userEntity),
+                            RefreshToken = this._jwtService.GenerateRefreshToken(userEntity.Email),
+                        }
+                    };
+                }
+
+                return new Response<AuthenticateResponse>()
+                {
+                    Success = false,
+                    Message = "Can't confirm email",
+                    Errors = confirmEmailResult.Errors.Select(s => s.Description),
+                };
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Can't confirm email, Error Message = {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<Response<AuthenticateResponse>> LoginAsync(AuthenticateRequest request)
+        {
+            UserEntity userEntity = await this._userManager.FindByNameAsync(request.UserName);
+
+            if (userEntity == null)
+            {
+                return new Response<AuthenticateResponse>()
+                {
+                    Success = false,
+                    Message = "User not existed in system",
                 };
             }
 
-            return new Response<UserModel>()
+            try
             {
-                Success = false,
-                Message = "Can't confirm email",
-                Errors = confirmEmailResult.Errors.Select(s => s.Description),
-            };
+                // Check password
+                var checkPasswordResult = await this._userManager.CheckPasswordAsync(userEntity, request.Password);
+
+                if (checkPasswordResult)
+                {
+                    int flag = 0; // role user
+                    if (await this._userManager.IsInRoleAsync(userEntity, RoleConstants.ROLE_ADMIN))
+                    {
+                        flag = 1;
+                    }
+
+                    return new Response<AuthenticateResponse>()
+                    {
+                        Success = true,
+                        Message = "Login successfully",
+                        Data = new AuthenticateResponse
+                        {
+                            Id = userEntity.Id,
+                            UserName = userEntity.UserName,
+                            FirstName = userEntity.FirstName,
+                            LastName = userEntity.LastName,
+                            Email = userEntity.Email,
+                            Role = flag == 0 ? RoleConstants.ROLE_USER : RoleConstants.ROLE_ADMIN,
+                            IsVerified = true,
+                            AccessToken = this._jwtService.GenerateAccessToken(userEntity),
+                            RefreshToken = this._jwtService.GenerateRefreshToken(userEntity.Email),
+                        }
+                    };
+                }
+
+                return new Response<AuthenticateResponse>()
+                {
+                    Success = false,
+                    Message = "Invalid Password",
+                };
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Can't login, Error Message = {ex.Message}");
+                throw;
+            }
         }
     }
 }

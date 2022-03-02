@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PhotoApp.Domain.Constants;
-using PhotoApp.Infrastructure.Entities;
+using PhotoApp.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
