@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using PhotoApp.Domain.Constants;
 using PhotoApp.Domain.Interfaces.IConfiguration;
 using PhotoApp.Domain.Request;
@@ -152,6 +153,43 @@ namespace PhotoApp.Application.Controllers.V1
                     Success = false,
                     Message = ex.Message,
                 });
+            }
+        }
+
+        /// <summary>
+        /// Refresh token
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("refreshtoken")]
+        public async Task<IActionResult> RefreshNewToken()
+        {
+            string refreshToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+            
+            try
+            {
+                var response = await this._unitOfWork.userRepository.RefreshNewToken(refreshToken);
+                if (response.Success)
+                {
+                    // Delete access token in cookies
+                    if (Request.Cookies["AccessToken"] != null)
+                    {
+                        Response.Cookies.Delete("AccessToken");
+                    }
+
+#pragma warning disable CS8604 // Possible null reference argument.
+                    HttpContext.Response.Cookies.Append("AccessToken", response.Data.accessToken, new CookieOptions { HttpOnly = true });
+#pragma warning restore CS8604 // Possible null reference argument.
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
         }
     }

@@ -300,5 +300,31 @@ namespace PhotoApp.Infrastructure.Repositories
                 throw;
             }
         }
+
+        public async Task<Response<RefreshTokenResponse>> RefreshNewToken(string refreshToken)
+        {
+            // Check refresh token
+            var email = this._jwtService.ValidateJwtToken(refreshToken);
+
+                // Check email
+            if (String.IsNullOrEmpty(refreshToken))
+            {
+                return new Response<RefreshTokenResponse>()
+                {
+                    Success = false,
+                    Message = "Can't validate refresh token",
+                    Data = new RefreshTokenResponse { accessToken = null }
+                };
+            }
+
+            UserEntity userEntity = await this._userManager.FindByEmailAsync(email);
+
+            return new Response<RefreshTokenResponse>()
+            {
+                Success = true,
+                Message = "Refresh token success",
+                Data = new RefreshTokenResponse { accessToken = this._jwtService.GenerateAccessToken(userEntity) },
+            };
+        }
     }
 }

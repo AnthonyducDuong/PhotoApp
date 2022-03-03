@@ -11,5 +11,7 @@ namespace PhotoApp.Domain.Interfaces.IServices
     {
         public string GenerateAccessToken(UserEntity userEntity);
         public string GenerateRefreshToken(string email);
+
+        public string ValidateJwtToken(string refreshToken);
     }
 }
