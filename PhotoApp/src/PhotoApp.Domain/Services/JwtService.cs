@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using PhotoApp.Domain.Constants;
 using PhotoApp.Domain.Entities;
@@ -77,6 +78,47 @@ namespace PhotoApp.Domain.Services
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        public string ValidateJwtToken(string refreshToken)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this._configuration["Token:SceretKey"]));
+
+            try
+            {
+                tokenHandler.ValidateToken(refreshToken, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = key,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
+                    // ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+                string email = jwtToken.Claims.First(c => c.Type == "email").Value;
+
+                // Check token expired
+                string exp = jwtToken.Claims.First(c => c.Type == "exp").Value;
+                long exp_long = long.Parse(exp);
+
+                DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(exp_long);
+                DateTime dateTimeExpires = dateTimeOffset.LocalDateTime;
+
+                if (dateTimeExpires < DateTime.UtcNow)
+                {
+                    return "";
+                }
+
+                // return email from JWT token if validation successful
+                return email;
+            }
+            catch (Exception)
+            {
+                return "";
+            }
         }
     }
 }
