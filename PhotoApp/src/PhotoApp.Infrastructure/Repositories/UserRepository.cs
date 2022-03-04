@@ -103,30 +103,30 @@ namespace PhotoApp.Infrastructure.Repositories
             }
         }
 
-        public Task<UserEntity> GetUserByEmail(string email)
+        public async Task<UserEntity> GetUserByEmail(string email)
         {
-            throw new NotImplementedException();
+            return await this._userManager.FindByEmailAsync(email);
         }
 
         public async Task<Response<RegisterResponse>> RegisterUserAsync(RegisterRequest request)
         {
-            Response<RegisterResponse> response = new Response<RegisterResponse>();
-            if (request == null)
-            {
-                throw new NullReferenceException("User entity is null");
-            }
-
-            if (request.Password != request.ConfirmPassword)
-            {
-                response.Success = false;
-                response.Message = "Confirm password doesn't match password";
-            }
-
-            // map request to user entity
-            UserEntity userEntity = this._mapper.Map<UserEntity>(request);
-
             try
             {
+                Response<RegisterResponse> response = new Response<RegisterResponse>();
+                if (request == null)
+                {
+                    throw new NullReferenceException("User entity is null");
+                }
+
+                if (request.Password != request.ConfirmPassword)
+                {
+                    response.Success = false;
+                    response.Message = "Confirm password doesn't match password";
+                }
+
+                // map request to user entity
+                UserEntity userEntity = this._mapper.Map<UserEntity>(request);
+
                 // User IUserManager in Identity -- hash password
                 IdentityResult createUserResult = await this._userManager.CreateAsync(userEntity, request.Password);
                 IdentityResult addToRoleResult = await this._userManager.AddToRoleAsync(userEntity, RoleConstants.ROLE_USER);
@@ -182,22 +182,22 @@ namespace PhotoApp.Infrastructure.Repositories
 
         public async Task<Response<AuthenticateResponse>> ConfirmEmailAsync(string UserId, string Token)
         {
-            UserEntity userEntity = await this._userManager.FindByIdAsync(UserId);
-             
-            if (userEntity == null)
-            {
-                return new Response<AuthenticateResponse>()
-                {
-                    Success = false,
-                    Message = "User not existed in system",
-                };
-            }
-
-            var decodedToken = WebEncoders.Base64UrlDecode(Token);
-            string normalToken = Encoding.UTF8.GetString(decodedToken);
-
             try
             {
+                UserEntity userEntity = await this._userManager.FindByIdAsync(UserId);
+
+                if (userEntity == null)
+                {
+                    return new Response<AuthenticateResponse>()
+                    {
+                        Success = false,
+                        Message = "User not existed in system",
+                    };
+                }
+
+                var decodedToken = WebEncoders.Base64UrlDecode(Token);
+                string normalToken = Encoding.UTF8.GetString(decodedToken);
+
                 // Confirm email
                 IdentityResult confirmEmailResult = await this._userManager.ConfirmEmailAsync(userEntity, normalToken);
 
@@ -245,19 +245,19 @@ namespace PhotoApp.Infrastructure.Repositories
 
         public async Task<Response<AuthenticateResponse>> LoginAsync(AuthenticateRequest request)
         {
-            UserEntity userEntity = await this._userManager.FindByNameAsync(request.UserName);
-
-            if (userEntity == null)
-            {
-                return new Response<AuthenticateResponse>()
-                {
-                    Success = false,
-                    Message = "User not existed in system",
-                };
-            }
-
             try
             {
+                UserEntity userEntity = await this._userManager.FindByNameAsync(request.UserName);
+
+                if (userEntity == null)
+                {
+                    return new Response<AuthenticateResponse>()
+                    {
+                        Success = false,
+                        Message = "User not existed in system",
+                    };
+                }
+
                 // Check password
                 var checkPasswordResult = await this._userManager.CheckPasswordAsync(userEntity, request.Password);
 
@@ -301,30 +301,131 @@ namespace PhotoApp.Infrastructure.Repositories
             }
         }
 
-        public async Task<Response<RefreshTokenResponse>> RefreshNewToken(string refreshToken)
+        public async Task<Response<RefreshTokenResponse>> RefreshNewTokenAsync(string refreshToken)
         {
-            // Check refresh token
-            var email = this._jwtService.ValidateJwtToken(refreshToken);
+            try
+            {
+                // Check refresh token
+                var email = this._jwtService.ValidateJwtToken(refreshToken);
 
                 // Check email
-            if (String.IsNullOrEmpty(refreshToken))
-            {
+                if (String.IsNullOrEmpty(refreshToken))
+                {
+                    return new Response<RefreshTokenResponse>()
+                    {
+                        Success = false,
+                        Message = "Can't validate refresh token",
+                        Data = new RefreshTokenResponse { accessToken = null }
+                    };
+                }
+
+                UserEntity userEntity = await this._userManager.FindByEmailAsync(email);
+
                 return new Response<RefreshTokenResponse>()
                 {
-                    Success = false,
-                    Message = "Can't validate refresh token",
-                    Data = new RefreshTokenResponse { accessToken = null }
+                    Success = true,
+                    Message = "Refresh token success",
+                    Data = new RefreshTokenResponse { accessToken = this._jwtService.GenerateAccessToken(userEntity) },
                 };
             }
-
-            UserEntity userEntity = await this._userManager.FindByEmailAsync(email);
-
-            return new Response<RefreshTokenResponse>()
+            catch (Exception ex)
             {
-                Success = true,
-                Message = "Refresh token success",
-                Data = new RefreshTokenResponse { accessToken = this._jwtService.GenerateAccessToken(userEntity) },
-            };
+                this._logger.LogError($"Can't Refresh new token, Error Message = {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<NormalResponse> ForgetPasswordAsync(string email)
+        {
+            try
+            {
+                UserEntity userEntity = await this._userManager.FindByEmailAsync(email);
+
+                if (userEntity == null)
+                {
+                    return new NormalResponse
+                    {
+                        Success = false,
+                        Message = "No user associated with email",
+                    };
+                }
+
+                string token = await this._userManager.GeneratePasswordResetTokenAsync(userEntity);
+                Byte[] encodedToken = Encoding.UTF8.GetBytes(token);
+                string validToken = WebEncoders.Base64UrlEncode(encodedToken);
+
+                // create url
+                string url = $"{this._configuration["AppUrl"]}/{ApiConstants.ServiceName}/v1/auth/resetpassword?email={email}&token={validToken}";
+
+                // send email
+                await this._mailService.SendEmailAsync(email, "Reset password", "<h1>Follow the instructions to reset your password</h1>" +
+                    $"<p>To reset your password <a href='{url}'>Click here</a></p>");
+
+                return new NormalResponse
+                {
+                    Success = true,
+                    Message = "Reset password URL has been sent to the email successfully!",
+                };
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Something wrong when forget password, Error Message = {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<NormalResponse> ResetPasswordAsync(ResetPasswordRequest request)
+        {
+            try
+            {
+                UserEntity userEntity = await this._userManager.FindByEmailAsync(request.Email);
+
+                if (userEntity == null)
+                {
+                    return new NormalResponse
+                    {
+                        Success = false,
+                        Message = "No user associated with email",
+                    };
+                }
+
+                if (request.ConfirmPassword != request.NewPassword)
+                {
+                    return new NormalResponse
+                    {
+                        Success = false,
+                        Message = "New password doesn't match confirm password",
+                    };
+                }
+
+                var decodedToken = WebEncoders.Base64UrlDecode(request.Token);
+                string normalToken = Encoding.UTF8.GetString(decodedToken);
+
+                IdentityResult resetPasswordResult = await this._userManager.ResetPasswordAsync(userEntity, normalToken, request.NewPassword);
+
+                if (resetPasswordResult.Succeeded)
+                {
+                    return new NormalResponse
+                    {
+                        Success = true,
+                        Message = "Password has been reset successfully",
+                    };
+                }
+                else
+                {
+                    return new NormalResponse
+                    {
+                        Success = false,
+                        Message = "Can't reset password, Something wrong",
+                        Errors = resetPasswordResult.Errors.Select(e => e.Description),
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Can't reset password, Error Message = {ex.Message}");
+                throw;
+            }
         }
     }
 }

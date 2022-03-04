@@ -1,15 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using PhotoApp.Domain.Constants;
 using PhotoApp.Domain.Interfaces.IConfiguration;
 using PhotoApp.Domain.Request;
+using PhotoApp.Domain.Response;
 using PhotoApp.Domain.Wrappers;
 using PhotoApp.Infrastructure.Configuration;
 using System.Text;
 
 namespace PhotoApp.Application.Controllers.V1
 {
+    [Authorize]
     [Route("api/" + ApiConstants.ServiceName + "/v{api-version:apiVersion}/[controller]")]
     [ApiVersion("1.0")]
     [ApiController]
@@ -30,6 +33,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUserAsync([FromBody]RegisterRequest request )
         {
@@ -74,6 +78,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// <param name="UserId"></param>
         /// <param name="token"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string UserId, string token)
         {
@@ -114,6 +119,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody]AuthenticateRequest request)
         {
@@ -160,6 +166,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// Refresh token
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("refreshtoken")]
         public async Task<IActionResult> RefreshNewToken()
         {
@@ -167,7 +174,7 @@ namespace PhotoApp.Application.Controllers.V1
             
             try
             {
-                var response = await this._unitOfWork.userRepository.RefreshNewToken(refreshToken);
+                var response = await this._unitOfWork.userRepository.RefreshNewTokenAsync(refreshToken);
                 if (response.Success)
                 {
                     // Delete access token in cookies
@@ -186,10 +193,96 @@ namespace PhotoApp.Application.Controllers.V1
                     return BadRequest(response);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                return BadRequest(new Response<Exception>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                });
+            }
+        }
 
-                throw;
+        /// <summary>
+        /// Forget password
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("ForgetPassword")]
+        public async Task<IActionResult> ForgetPassword(string email)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(email))
+                {
+                    var response = await this._unitOfWork.userRepository.ForgetPasswordAsync(email);
+
+                    if (response.Success)
+                    {
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        return BadRequest(response);
+                    }
+                }
+                else
+                {
+                    return BadRequest(new NormalResponse
+                    {
+                        Success = false,
+                        Message = "Email is null or empty",
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response<Exception>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (var item in ModelState.Values)
+                {
+                    sb.Append(item);
+                    sb.Append("& ");
+                }
+                return BadRequest(new Response<Exception>
+                {
+                    Success = false,
+                    Message = sb.ToString(),
+                });
+            }
+
+            try
+            {
+                var response = await this._unitOfWork.userRepository.ResetPasswordAsync(request);
+
+                if (response.Success)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response<Exception>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                });
             }
         }
     }
