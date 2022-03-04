@@ -32,7 +32,10 @@ namespace PhotoApp.Application.Controllers.V1
         /// Register new account for user
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns>
+        /// <returns>RegisterResponse</returns>
+        /// <remarks>
+        /// - Tables used. => User Entity
+        /// </remarks>
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUserAsync([FromBody]RegisterRequest request )
@@ -118,11 +121,15 @@ namespace PhotoApp.Application.Controllers.V1
         /// Login for user or admin
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns>
+        /// <returns>Data of user; AccessToken and RefreshToken</returns>
+        /// <remarks>
+        /// - Tables used => UserEntity
+        /// </remarks>
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync([FromBody]AuthenticateRequest request)
+        public async Task<IActionResult> LoginAsync(AuthenticateRequest request)
         {
+            // not run to this ??
             if (!ModelState.IsValid)
             {
                 StringBuilder sb = new StringBuilder();
@@ -165,7 +172,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// <summary>
         /// Refresh token
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New AccessToken</returns>
         [Authorize]
         [HttpPost("refreshtoken")]
         public async Task<IActionResult> RefreshNewToken()
@@ -206,6 +213,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// <summary>
         /// Forget password
         /// </summary>
+        /// <returns>Send email with token reset mail and email</returns>
         [AllowAnonymous]
         [HttpPost("ForgetPassword")]
         public async Task<IActionResult> ForgetPassword(string email)
@@ -244,6 +252,11 @@ namespace PhotoApp.Application.Controllers.V1
             }
         }
 
+        /// <summary>
+        /// Reset password
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordRequest request)
