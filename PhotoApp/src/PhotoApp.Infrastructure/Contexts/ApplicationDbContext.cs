@@ -92,6 +92,7 @@ namespace PhotoApp.Infrastructure.Contexts
                 entity.Property(p => p.Url).IsRequired();
                 entity.Property(p => p.CreatedAt).HasDefaultValueSql("getutcdate()");
                 entity.Property(p => p.Updated).HasDefaultValueSql("getutcdate()");
+                entity.Property(p => p.Mode).HasDefaultValue(ModePhotoEnums.PUBLIC);
                 entity.HasOne<UserEntity>(u => u.userEntity)
                       .WithMany(p => p.photoEntities)
                       .HasForeignKey(u => u.UserId)
@@ -103,13 +104,13 @@ namespace PhotoApp.Infrastructure.Contexts
                 entity.ToTable("LikePhoto");
                 entity.HasKey(l => new { l.UserId, l.PhotoId });
                 // Photo Entity
-                entity.HasOne<PhotoEntity>(p => p.PhotoEntity)
+                entity.HasOne<PhotoEntity>(p => p.photoEntity)
                       .WithMany(l => l.likePhotoEntities)
                       .HasForeignKey(p => p.PhotoId)
                       .HasConstraintName("Fk_LikePhoto_Photo")
                       .OnDelete(DeleteBehavior.NoAction);
                 // User Entity
-                entity.HasOne<UserEntity>(u => u.UserEntity)
+                entity.HasOne<UserEntity>(u => u.userEntity)
                       .WithMany(l => l.likePhotoEntities)
                       .HasForeignKey(u => u.UserId)
                       .HasConstraintName("Fk_LikePhoto_User")
@@ -121,13 +122,13 @@ namespace PhotoApp.Infrastructure.Contexts
                 entity.ToTable("DislikePhoto");
                 entity.HasKey(d => new { d.UserId, d.PhotoId });
                 // Photo Entity
-                entity.HasOne<PhotoEntity>(p => p.PhotoEntity)
+                entity.HasOne<PhotoEntity>(p => p.photoEntity)
                       .WithMany(d => d.dislikePhotoEntities)
                       .HasForeignKey(p => p.PhotoId)
                       .HasConstraintName("Fk_DislikePhoto_Photo")
                       .OnDelete(DeleteBehavior.NoAction);
                 // User Entity
-                entity.HasOne<UserEntity>(u => u.UserEntity)
+                entity.HasOne<UserEntity>(u => u.userEntity)
                       .WithMany(d => d.dislikePhotoEntities)
                       .HasForeignKey(u => u.UserId)
                       .HasConstraintName("Fk_DislikePhoto_User")
@@ -163,13 +164,13 @@ namespace PhotoApp.Infrastructure.Contexts
                 entity.ToTable("LikeComment");
                 entity.HasKey(l => new { l.UserId, l.CommentId });
                 // Comment Entity
-                entity.HasOne<CommentEntity>(c => c.CommentEntity)
+                entity.HasOne<CommentEntity>(c => c.commentEntity)
                       .WithMany(l => l.likeCommentEntities)
                       .HasForeignKey(c => c.CommentId)
                       .HasConstraintName("Fk_LikeComment_Comment")
                       .OnDelete(DeleteBehavior.NoAction);
                 // User Entity
-                entity.HasOne<UserEntity>(u => u.UserEntity)
+                entity.HasOne<UserEntity>(u => u.userEntity)
                       .WithMany(l => l.likeCommentEntities)
                       .HasForeignKey(u => u.UserId)
                       .HasConstraintName("Fk_LikeComment_User")
@@ -181,13 +182,13 @@ namespace PhotoApp.Infrastructure.Contexts
                 entity.ToTable("DislikeComment");
                 entity.HasKey(l => new { l.UserId, l.CommentId });
                 // Comment Entity
-                entity.HasOne<CommentEntity>(c => c.CommentEntity)
+                entity.HasOne<CommentEntity>(c => c.commentEntity)
                       .WithMany(d => d.dislikeCommentEntities)
                       .HasForeignKey(c => c.CommentId)
                       .HasConstraintName("Fk_DislikeComment_Comment")
                       .OnDelete(DeleteBehavior.NoAction);
                 // User Entity
-                entity.HasOne<UserEntity>(u => u.UserEntity)
+                entity.HasOne<UserEntity>(u => u.userEntity)
                       .WithMany(d => d.dislikeCommentEntities)
                       .HasForeignKey(u => u.UserId)
                       .HasConstraintName("Fk_DislikeComment_User")

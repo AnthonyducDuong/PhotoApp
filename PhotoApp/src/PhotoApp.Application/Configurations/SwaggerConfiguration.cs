@@ -129,7 +129,7 @@ namespace PhotoApp.Application.Configurations
             {
                 Title = $"{ApiConstants.FriendlyServiceName} API {description.ApiVersion}",
                 Version = description.ApiVersion.ToString(),
-                Description = "###Thang###",
+                Description = "###Thang### --- Link: https://localhost:7109/api/photoappservice/v1",
             };
 
             if (description.IsDeprecated)

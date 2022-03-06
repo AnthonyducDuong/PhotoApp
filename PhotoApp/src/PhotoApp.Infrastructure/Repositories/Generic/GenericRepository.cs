@@ -19,7 +19,7 @@ namespace PhotoApp.Infrastructure.Repositories.Generic
         protected ApplicationDbContext _applicationDbContext;
         protected readonly ILogger _logger;
         internal DbSet<TEntity> dbSet;
-        private readonly IMapper _mapper;
+        protected readonly IMapper _mapper;
 
         public GenericRepository(ApplicationDbContext applicationDbContext, ILogger logger, IMapper mapper)
         {

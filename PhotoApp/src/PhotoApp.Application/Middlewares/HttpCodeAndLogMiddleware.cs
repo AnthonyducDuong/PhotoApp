@@ -80,7 +80,7 @@ namespace PhotoApp.Application.Middlewares
         }
 
         private async Task WriteAndLogResponseAsync(Exception exception, HttpContext httpContext,
-            HttpStatusCode httpStatusCode, LogLevel logLevel, string alternateMessage = null)
+            HttpStatusCode httpStatusCode, LogLevel logLevel, string? alternateMessage = null)
         {
             string requestBody = string.Empty;
             if (httpContext.Request.Body.CanSeek)

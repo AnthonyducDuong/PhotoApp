@@ -9,7 +9,7 @@ namespace PhotoApp.Domain.Request
 {
     public class RegisterRequest
     {
-        public Guid Id { get; init; }
+        //public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Username is invalid")]
         [StringLength(50, ErrorMessage = "Your Username can contain only 50 characters")]
@@ -20,7 +20,7 @@ namespace PhotoApp.Domain.Request
         public string? FirstName { get; set; }
 
         [Required(ErrorMessage = "Last name is invalid")]
-        [StringLength(20, ErrorMessage = "Your First Name can contain only 20 characters")]
+        [StringLength(20, ErrorMessage = "Your Last Name can contain only 20 characters")]
         public string? LastName { get; set; }
 
         public string? Gender { get; set; }

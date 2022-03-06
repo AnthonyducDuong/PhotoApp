@@ -9,6 +9,7 @@ using PhotoApp.Domain.Services;
 using PhotoApp.Infrastructure.Configuration;
 using PhotoApp.Infrastructure.Contexts;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace PhotoApp.Application
 {
@@ -25,6 +26,10 @@ namespace PhotoApp.Application
             {
                 throw new ArgumentException(nameof(configuration));
             }
+
+            // Ignoring circular references
+            services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
             // Entity Framework
             services.AddDbContext<ApplicationDbContext>(option => {
@@ -67,7 +72,8 @@ namespace PhotoApp.Application
                         ValidateAudience = false,
                         ValidAudience = configuration["Token:ValidAudience"],
                         ValidIssuer = configuration["Token:ValidIssuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Token:SceretKey"]))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Token:SceretKey"])),
+                        ClockSkew = TimeSpan.Zero,
                     };
                     
                 })
