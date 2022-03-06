@@ -34,7 +34,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// <param name="request"></param>
         /// <returns>RegisterResponse</returns>
         /// <remarks>
-        /// - Tables used. => User Entity
+        /// - https://localhost:7109/api/photoappservice/v1/auth/register
         /// </remarks>
         [AllowAnonymous]
         [HttpPost("register")]
@@ -58,15 +58,18 @@ namespace PhotoApp.Application.Controllers.V1
             try
             {
                 var response = await this._unitOfWork.userRepository.RegisterUserAsync(request);
-                await this._unitOfWork.CompleteAsync();
+                
                 if (response.Success)
                 {
+                    await this._unitOfWork.CompleteAsync();
                     return Ok(response);
                 }
+                this._unitOfWork.Dispose();
                 return BadRequest(response);
             }
             catch (Exception ex)
             {
+                this._unitOfWork.Dispose();
                 return BadRequest(new Response<Exception>
                 {
                     Success = false,
@@ -80,7 +83,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// </summary>
         /// <param name="UserId"></param>
         /// <param name="token"></param>
-        /// <returns></returns>
+        /// <remarks>- https://localhost:7109/api/photoappservice/v1/auth/confirmemail</remarks>
         [AllowAnonymous]
         [HttpGet("ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string UserId, string token)
@@ -123,7 +126,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// <param name="request"></param>
         /// <returns>Data of user; AccessToken and RefreshToken</returns>
         /// <remarks>
-        /// - Tables used => UserEntity
+        /// - https://localhost:7109/api/photoappservice/v1/auth/login
         /// </remarks>
         [AllowAnonymous]
         [HttpPost("login")]
@@ -173,6 +176,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// Refresh token
         /// </summary>
         /// <returns>New AccessToken</returns>
+        /// <remarks>- https://localhost:7109/api/photoappservice/v1/auth/refreshtoken</remarks>
         [Authorize]
         [HttpPost("refreshtoken")]
         public async Task<IActionResult> RefreshNewToken()
@@ -214,6 +218,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// Forget password
         /// </summary>
         /// <returns>Send email with token reset mail and email</returns>
+        /// <remarks>https://localhost:7109/api/photoappservice/v1/auth/forgetpassword</remarks>
         [AllowAnonymous]
         [HttpPost("ForgetPassword")]
         public async Task<IActionResult> ForgetPassword(string email)
@@ -257,6 +262,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        /// <remarks>https://localhost:7109/api/photoappservice/v1/auth/resetpassword</remarks>
         [AllowAnonymous]
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordRequest request)

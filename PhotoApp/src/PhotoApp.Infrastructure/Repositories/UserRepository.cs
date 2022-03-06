@@ -26,7 +26,7 @@ namespace PhotoApp.Infrastructure.Repositories
         private readonly UserManager<UserEntity> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IMailService _mailService;
-        private readonly IMapper _mapper;
+        //private readonly IMapper _mapper;
         private readonly IJwtService _jwtService;
 
         public UserRepository(ApplicationDbContext applicationDbContext, ILogger logger
@@ -41,7 +41,7 @@ namespace PhotoApp.Infrastructure.Repositories
             this._userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             this._configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this._mailService = mailService ?? throw new ArgumentNullException(nameof(mailService));
-            this._mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            //this._mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             this._jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
         }
 
@@ -61,26 +61,11 @@ namespace PhotoApp.Infrastructure.Repositories
 
         public override async Task<bool> Update(UserEntity userEntity)
         {
-            try
-            {
-                var existingUser = await this.dbSet.Where(x => x.Id == userEntity.Id)
-                                                    .FirstOrDefaultAsync();
+            // change email have another service
+            // Update infor basic
+            IdentityResult updateResult = await this._userManager.UpdateAsync(userEntity);
 
-                if (existingUser == null)
-                    return await Add(userEntity);
-
-                existingUser.UserName = userEntity.UserName;
-                existingUser.FirstName = userEntity.FirstName;
-                existingUser.LastName = userEntity.LastName;
-                existingUser.Email = userEntity.Email;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                this._logger.LogError(ex, "{Repo} Update function error", typeof(UserRepository));
-                return false;
-            }
+            return updateResult.Succeeded;
         }
 
         public override async Task<bool> Delete(Guid Id)
@@ -249,49 +234,57 @@ namespace PhotoApp.Infrastructure.Repositories
             {
                 UserEntity userEntity = await this._userManager.FindByNameAsync(request.UserName);
 
-                if (userEntity == null)
+                if (await this._userManager.IsEmailConfirmedAsync(userEntity))
                 {
-                    return new Response<AuthenticateResponse>()
+                    if (userEntity == null)
                     {
-                        Success = false,
-                        Message = "User not existed in system",
-                    };
-                }
+                        return new Response<AuthenticateResponse>()
+                        {
+                            Success = false,
+                            Message = "User not existed in system",
+                        };
+                    }
 
-                // Check password
-                var checkPasswordResult = await this._userManager.CheckPasswordAsync(userEntity, request.Password);
+                    // Check password
+                    var checkPasswordResult = await this._userManager.CheckPasswordAsync(userEntity, request.Password);
 
-                if (checkPasswordResult)
-                {
-                    int flag = 0; // role user
-                    if (await this._userManager.IsInRoleAsync(userEntity, RoleConstants.ROLE_ADMIN))
+                    if (checkPasswordResult)
                     {
-                        flag = 1;
+                        int flag = 0; // role user
+                        if (await this._userManager.IsInRoleAsync(userEntity, RoleConstants.ROLE_ADMIN))
+                        {
+                            flag = 1;
+                        }
+
+                        return new Response<AuthenticateResponse>()
+                        {
+                            Success = true,
+                            Message = "Login successfully",
+                            Data = new AuthenticateResponse
+                            {
+                                Id = userEntity.Id,
+                                UserName = userEntity.UserName,
+                                FirstName = userEntity.FirstName,
+                                LastName = userEntity.LastName,
+                                Email = userEntity.Email,
+                                Role = flag == 0 ? RoleConstants.ROLE_USER : RoleConstants.ROLE_ADMIN,
+                                IsVerified = true,
+                                AccessToken = this._jwtService.GenerateAccessToken(userEntity),
+                                RefreshToken = this._jwtService.GenerateRefreshToken(userEntity.Email),
+                            }
+                        };
                     }
 
                     return new Response<AuthenticateResponse>()
                     {
-                        Success = true,
-                        Message = "Login successfully",
-                        Data = new AuthenticateResponse
-                        {
-                            Id = userEntity.Id,
-                            UserName = userEntity.UserName,
-                            FirstName = userEntity.FirstName,
-                            LastName = userEntity.LastName,
-                            Email = userEntity.Email,
-                            Role = flag == 0 ? RoleConstants.ROLE_USER : RoleConstants.ROLE_ADMIN,
-                            IsVerified = true,
-                            AccessToken = this._jwtService.GenerateAccessToken(userEntity),
-                            RefreshToken = this._jwtService.GenerateRefreshToken(userEntity.Email),
-                        }
+                        Success = false,
+                        Message = "Invalid Password",
                     };
                 }
-
                 return new Response<AuthenticateResponse>()
                 {
                     Success = false,
-                    Message = "Invalid Password",
+                    Message = "Email doesn't confirm",
                 };
             }
             catch (Exception ex)
@@ -301,15 +294,15 @@ namespace PhotoApp.Infrastructure.Repositories
             }
         }
 
-        public async Task<Response<RefreshTokenResponse>> RefreshNewTokenAsync(string refreshToken)
+        public async Task<Response<RefreshTokenResponse>> RefreshNewTokenAsync(string accessToken)
         {
             try
             {
                 // Check refresh token
-                var email = this._jwtService.ValidateJwtToken(refreshToken);
+                var email = this._jwtService.ValidateJwtToken(accessToken);
 
                 // Check email
-                if (String.IsNullOrEmpty(refreshToken))
+                if (String.IsNullOrEmpty(accessToken))
                 {
                     return new Response<RefreshTokenResponse>()
                     {
@@ -424,6 +417,106 @@ namespace PhotoApp.Infrastructure.Repositories
             catch (Exception ex)
             {
                 this._logger.LogError($"Can't reset password, Error Message = {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<NormalResponse> UpdateBasicInformationAsync(BasicInfoUserRequest request)
+        {
+            try
+            {
+                UserEntity userEntity = await this._userManager.FindByEmailAsync(request.Email);
+
+                if (userEntity == null)
+                {
+                    return new NormalResponse { Success = false, Message = "Can't find user" };
+                }
+
+                //var token = await this._userManager.GeneratePasswordResetTokenAsync(userEntity);
+                // check gender
+                string gender = GenderConstants.OTHER;
+                if (request.Gender == GenderConstants.MALE)
+                {
+                    gender = GenderConstants.MALE;
+                }
+                else if (request.Gender == GenderConstants.FEMALE)
+                {
+                    gender = GenderConstants.FEMALE;
+                }
+
+                userEntity.UserName = request.UserName;
+                userEntity.FirstName = request.FirstName;
+                userEntity.LastName = request.LastName;
+                userEntity.Gender = gender;
+                // update
+                bool result = await this.Update(userEntity);
+
+                if (result)
+                {
+                    if (await this._userManager.CheckPasswordAsync(userEntity, request.Password) == false)
+                    {
+                        string tokenResetPassword = await this._userManager.GeneratePasswordResetTokenAsync(userEntity);
+                        IdentityResult resetPasswordResult = await this._userManager.ResetPasswordAsync(userEntity, tokenResetPassword, request.Password);
+                    }
+
+                    return new NormalResponse
+                    {
+                        Success = true,
+                        Message = "Update successfully",
+                    };
+                }
+                return new NormalResponse
+                {
+                    Success = false,
+                    Message = "Update unsuccessfully",
+                };
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Can't update, Error Message = {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<NormalResponse> ChangeEmailAsync(ChangeEmailRequest request)
+        {
+            try
+            {
+                UserEntity userEntity = await this._userManager.FindByEmailAsync(request.CurrentEmail);
+
+                userEntity.Email = request.NewEmail;
+                userEntity.EmailConfirmed = false;
+
+                IdentityResult updateResult = await this._userManager.UpdateAsync(userEntity);
+
+                if (updateResult.Succeeded)
+                {
+                    string emailConfirmToken = await this._userManager.GenerateEmailConfirmationTokenAsync(userEntity);
+                    var encodedToken = Encoding.UTF8.GetBytes(emailConfirmToken);
+                    var validToken = WebEncoders.Base64UrlEncode(encodedToken);
+
+                    string url = $"{this._configuration["AppUrl"]}/{ApiConstants.ServiceName}/v1/auth/confirmemail?userid={userEntity.Id}&token={validToken}";
+
+#pragma warning disable CS8604 // Possible null reference argument.
+                    await this._mailService.SendEmailAsync(userEntity.Email, "You have changed email so confirm your new email", $"<h1>Welcome to Auth Demo</h1>" +
+                    $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
+#pragma warning restore CS8604 // Possible null reference argument.
+
+                    return new NormalResponse
+                    {
+                        Success = true,
+                        Message = "Check email to confirm",
+                    };
+                }
+                return new NormalResponse
+                {
+                    Success = false,
+                    Message = "Can't update new email",
+                };
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Can't change email, Error Message = {ex.Message}");
                 throw;
             }
         }

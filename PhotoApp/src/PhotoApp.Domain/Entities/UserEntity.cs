@@ -6,11 +6,25 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace PhotoApp.Domain.Entities
 {
     public class UserEntity : IdentityUser<Guid>
     {
+        private ICollection<PhotoEntity>? _photoEntities;
+        private IList<LikePhotoEntity>? _likePhotoEntities;
+        private IList<DislikePhotoEntity>? _dislikePhotoEntities;
+        private ICollection<CommentEntity>? _commentEntities;
+        private IList<LikeCommentEntity>? _likeCommentEntities;
+        private IList<DislikeCommentEntity>? _dislikeCommentEntities;
+        private ILazyLoader _lazyLoader { get; set; }
+
+        public UserEntity(ILazyLoader lazyLoader)
+        {
+            this._lazyLoader = lazyLoader;
+        }
+
         /* [Key]
          [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
          [Required(ErrorMessage = "UserId is invalid")]
@@ -35,17 +49,53 @@ namespace PhotoApp.Domain.Entities
         public string? Password { get; set; }*/
 
         // Relationship
-        public ICollection<PhotoEntity>? photoEntities { get; set; }
+        public ICollection<PhotoEntity>? photoEntities 
+        {
+#pragma warning disable CS8603 // Possible null reference return.
+            get => this._lazyLoader.Load(this, ref this._photoEntities);
+#pragma warning restore CS8603 // Possible null reference return.
+            set => this._photoEntities = value;
+        }
 
-        public IList<LikePhotoEntity>? likePhotoEntities { get; set; }
+        public IList<LikePhotoEntity>? likePhotoEntities
+        {
+#pragma warning disable CS8603 // Possible null reference return.
+            get => this._lazyLoader.Load(this, ref this._likePhotoEntities);
+#pragma warning restore CS8603 // Possible null reference return.
+            set => this._likePhotoEntities = value;
+        }
 
-        public IList<DislikePhotoEntity>? dislikePhotoEntities { get; set; }
+        public IList<DislikePhotoEntity>? dislikePhotoEntities
+        {
+#pragma warning disable CS8603 // Possible null reference return.
+            get => this._lazyLoader.Load(this, ref this._dislikePhotoEntities);
+#pragma warning restore CS8603 // Possible null reference return.
+            set => this._dislikePhotoEntities = value;
+        }
 
-        public ICollection<CommentEntity>? commentEntities { get; set; }
+        public ICollection<CommentEntity>? commentEntities
+        {
+#pragma warning disable CS8603 // Possible null reference return.
+            get => this._lazyLoader.Load(this, ref this._commentEntities);
+#pragma warning restore CS8603 // Possible null reference return.
+            set => this._commentEntities = value;
+        }
 
-        public IList<LikeCommentEntity>? likeCommentEntities { get; set; }
+        public IList<LikeCommentEntity>? likeCommentEntities
+        {
+#pragma warning disable CS8603 // Possible null reference return.
+            get => this._lazyLoader.Load(this, ref this._likeCommentEntities);
+#pragma warning restore CS8603 // Possible null reference return.
+            set => this._likeCommentEntities = value;
+        }
 
-        public IList<DislikeCommentEntity>? dislikeCommentEntities { get; set; }
+        public IList<DislikeCommentEntity>? dislikeCommentEntities
+        {
+#pragma warning disable CS8603 // Possible null reference return.
+            get => this._lazyLoader.Load(this, ref this._dislikeCommentEntities);
+#pragma warning restore CS8603 // Possible null reference return.
+            set => this._dislikeCommentEntities = value;
+        }
 
         // Foreign Key
         /*public int RoleId { get; set; }

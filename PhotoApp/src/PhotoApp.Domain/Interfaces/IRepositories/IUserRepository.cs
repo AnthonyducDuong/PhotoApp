@@ -27,12 +27,18 @@ namespace PhotoApp.Domain.Interfaces.IRepositories
         public Task<Response<AuthenticateResponse>> LoginAsync(AuthenticateRequest request);
 
         // Refresh token - return new access token
-        public Task<Response<RefreshTokenResponse>> RefreshNewTokenAsync(string refreshToken);
+        public Task<Response<RefreshTokenResponse>> RefreshNewTokenAsync(string accessToken);
 
         // Forget password
         public Task<NormalResponse> ForgetPasswordAsync(string email);
 
         // Reset password
         public Task<NormalResponse> ResetPasswordAsync(ResetPasswordRequest request);
+
+        // Update information
+        public Task<NormalResponse> UpdateBasicInformationAsync(BasicInfoUserRequest request);
+
+        // Change Email
+        public Task<NormalResponse> ChangeEmailAsync(ChangeEmailRequest request);
     }
 }

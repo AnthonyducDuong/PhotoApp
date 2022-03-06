@@ -8,7 +8,8 @@ namespace PhotoApp.Application.Mappings
     {
         public GeneralProfile()
         {
-            CreateMap<UserEntity, RegisterRequest>().ReverseMap();
+            this.CreateMap<UserEntity, RegisterRequest>().ReverseMap();
+            this.CreateMap<PhotoEntity, PhotoRequest>().ReverseMap();
         }
     }
 }

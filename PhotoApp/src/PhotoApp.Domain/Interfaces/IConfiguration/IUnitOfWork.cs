@@ -10,6 +10,7 @@ namespace PhotoApp.Domain.Interfaces.IConfiguration
     public interface IUnitOfWork
     {
         IUserRepository userRepository { get; }
+        IPhotoRepository photoRepository { get; }
 
         Task CompleteAsync();
 
