@@ -17,6 +17,9 @@ namespace PhotoApp.Domain.Interfaces.IRepositories
         public Task<Response<PhotoEntity>> createPhotoAsync(PhotoRequest request);
 
         // Get all photos of user
-        public Task<Response<IEnumerable<PhotoEntity>>> getAllPhotosOfUser(string email);
+        public Task<Response<IEnumerable<PhotoEntity>>> getAllPhotosOfUser(string userId);
+
+        // Update 
+        public Task<NormalResponse> updatePhotoAsync(PhotoRequest request);
     }
 }

@@ -11,13 +11,13 @@ namespace PhotoApp.Domain.Interfaces.IRepositories.IGeneric
     {
         Task<bool> Add(TEntity entity);
 
-        Task<bool> Delete(Guid Id);
+        Task<bool> Delete(string Id);
 
         Task<bool> Update(TEntity entity);
 
         Task<IEnumerable<TEntity>> All();
 
-        Task<TEntity?> GetById(Guid Id);
+        Task<TEntity?> GetById(string Id);
 
         Task<IEnumerable<TEntity>> Find(Expression<Func<TEntity, bool>> predicate);
     }

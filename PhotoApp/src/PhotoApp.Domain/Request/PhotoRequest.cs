@@ -10,6 +10,7 @@ namespace PhotoApp.Domain.Request
 {
     public class PhotoRequest
     {
+        public string? Id { get; set; }
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Photo URL is invalid")]

@@ -68,11 +68,11 @@ namespace PhotoApp.Infrastructure.Repositories
             return updateResult.Succeeded;
         }
 
-        public override async Task<bool> Delete(Guid Id)
+        public override async Task<bool> Delete(string Id)
         {
             try
             {
-                var exist = await this.dbSet.Where(x => x.Id == Id)
+                var exist = await this.dbSet.Where(x => x.Id.ToString() == Id)
                                         .FirstOrDefaultAsync();
 
                 if (exist == null) return false;
@@ -294,20 +294,29 @@ namespace PhotoApp.Infrastructure.Repositories
             }
         }
 
-        public async Task<Response<RefreshTokenResponse>> RefreshNewTokenAsync(string accessToken)
+        public async Task<Response<RefreshTokenResponse>> RefreshNewTokenAsync(string accessToken, string refreshToken)
         {
             try
             {
-                // Check refresh token
-                var email = this._jwtService.ValidateJwtToken(accessToken);
-
-                // Check email
-                if (String.IsNullOrEmpty(accessToken))
-                {
+                if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken)) {
                     return new Response<RefreshTokenResponse>()
                     {
                         Success = false,
                         Message = "Can't validate refresh token",
+                        Data = new RefreshTokenResponse { accessToken = null }
+                    };
+                }
+
+                // Check refresh token
+                var email = this._jwtService.ValidateJwtToken(refreshToken);
+
+                // Check email
+                if (String.IsNullOrEmpty(email))
+                {
+                    return new Response<RefreshTokenResponse>()
+                    {
+                        Success = false,
+                        Message = "Can't validate email in token",
                         Data = new RefreshTokenResponse { accessToken = null }
                     };
                 }

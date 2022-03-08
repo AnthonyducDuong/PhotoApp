@@ -101,7 +101,7 @@ namespace PhotoApp.Domain.Services
                 string email = jwtToken.Claims.First(c => c.Type == "email").Value;
 
                 // Check token expired
-                /*string exp = jwtToken.Claims.First(c => c.Type == "exp").Value;
+                string exp = jwtToken.Claims.First(c => c.Type == "exp").Value;
                 long exp_long = long.Parse(exp);
 
                 DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(exp_long);
@@ -110,7 +110,7 @@ namespace PhotoApp.Domain.Services
                 if (dateTimeExpires < DateTime.UtcNow)
                 {
                     return "";
-                }*/
+                }
 
                 // return email from JWT token if validation successful
                 return email;

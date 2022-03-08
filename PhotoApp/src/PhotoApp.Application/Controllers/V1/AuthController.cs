@@ -177,23 +177,24 @@ namespace PhotoApp.Application.Controllers.V1
         /// </summary>
         /// <returns>New AccessToken</returns>
         /// <remarks>- https://localhost:7109/api/photoappservice/v1/auth/refreshtoken</remarks>
-        [Authorize]
         [HttpPost("refreshtoken")]
-        public async Task<IActionResult> RefreshNewToken()
+        public async Task<IActionResult> RefreshNewToken([FromBody] RefreshTokenRequest request)
         {
-            string refreshToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
-            
+            string accessToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
             try
             {
-                var response = await this._unitOfWork.userRepository.RefreshNewTokenAsync(refreshToken);
+#pragma warning disable CS8604 // Possible null reference argument.
+                var response = await this._unitOfWork.userRepository.RefreshNewTokenAsync(accessToken, request.refreshToken);
+#pragma warning restore CS8604 // Possible null reference argument.
+
+                // Delete access token in cookies
+                if (Request.Cookies["AccessToken"] != null)
+                {
+                    Response.Cookies.Delete("AccessToken");
+                }
+
                 if (response.Success)
                 {
-                    // Delete access token in cookies
-                    if (Request.Cookies["AccessToken"] != null)
-                    {
-                        Response.Cookies.Delete("AccessToken");
-                    }
-
 #pragma warning disable CS8604 // Possible null reference argument.
                     HttpContext.Response.Cookies.Append("AccessToken", response.Data.accessToken, new CookieOptions { HttpOnly = true });
 #pragma warning restore CS8604 // Possible null reference argument.
