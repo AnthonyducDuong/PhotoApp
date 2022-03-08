@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using PhotoApp.Domain.Constants;
 using PhotoApp.Domain.Entities;
 using PhotoApp.Domain.Enums;
@@ -14,6 +16,11 @@ namespace PhotoApp.Infrastructure.Contexts
 {
     public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>
     {
+        //static LoggerFactory object
+        public static readonly Microsoft.Extensions.Logging.LoggerFactory _loggerFactory = new LoggerFactory(new[] {
+            new Microsoft.Extensions.Logging.Debug.DebugLoggerProvider()
+        });
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         #region DbSet
@@ -197,6 +204,15 @@ namespace PhotoApp.Infrastructure.Contexts
 
             // Create seed data for role entity
             RoleDbInitializer.Seed(modelBuilder);
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseLoggerFactory(_loggerFactory);  //tie-up DbContext with LoggerFactory object
+            optionsBuilder.EnableSensitiveDataLogging().
+                           LogTo(Console.WriteLine, LogLevel.Information); ;
+            optionsBuilder.UseLazyLoadingProxies();
+            base.OnConfiguring(optionsBuilder);
         }
     }
 }

@@ -40,7 +40,7 @@ namespace PhotoApp.Infrastructure.Repositories.Generic
             return true;
         }
 
-        public virtual Task<bool> Delete(Guid Id)
+        public virtual Task<bool> Delete(string Id)
         {
             throw new NotImplementedException();
         }
@@ -55,14 +55,14 @@ namespace PhotoApp.Infrastructure.Repositories.Generic
             return await this.dbSet.ToListAsync().ConfigureAwait(false);
         }
 
-        public virtual async Task<TEntity?> GetById(Guid Id)
+        public virtual async Task<TEntity?> GetById(string Id)
         {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-            return await this.dbSet.FindAsync(Id);
+            return await this.dbSet.FindAsync(Guid.Parse(Id));
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
         }
 
-        public virtual Task<bool> Update(TEntity model)
+        public virtual Task<bool> Update(TEntity entity)
         {
             throw new NotImplementedException();
         }

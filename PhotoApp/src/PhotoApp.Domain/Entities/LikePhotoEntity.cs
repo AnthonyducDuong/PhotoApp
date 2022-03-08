@@ -11,29 +11,13 @@ namespace PhotoApp.Domain.Entities
 {
     public class LikePhotoEntity
     {
-        private UserEntity? _userEntity;
-        private PhotoEntity? _photoEntity;
-
-        private ILazyLoader? _lazyLoader { get; set; }
         // Foreign Key
         // User Entity
         public Guid UserId { get; set; }
-        public UserEntity userEntity
-        {
-#pragma warning disable CS8603 // Possible null reference return.
-            get => this._lazyLoader.Load(this, ref this._userEntity);
-#pragma warning restore CS8603 // Possible null reference return.
-            set => this._userEntity = value;
-        }
+        public virtual UserEntity? userEntity { get; set; }
 
         // Photo Entity
         public Guid PhotoId { get; set; }
-        public PhotoEntity photoEntity
-        {
-#pragma warning disable CS8603 // Possible null reference return.
-            get => this._lazyLoader.Load(this, ref this._photoEntity);
-#pragma warning restore CS8603 // Possible null reference return.
-            set => this._photoEntity = value;
-        }
+        public virtual PhotoEntity? photoEntity { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using PhotoApp.Domain.Entities;
 using PhotoApp.Domain.Interfaces.IRepositories;
 using PhotoApp.Domain.Request;
+using PhotoApp.Domain.Response;
 using PhotoApp.Domain.Wrappers;
 using PhotoApp.Infrastructure.Contexts;
 using PhotoApp.Infrastructure.Repositories.Generic;
@@ -25,6 +26,41 @@ namespace PhotoApp.Infrastructure.Repositories
             base(applicationDbContext, logger, mapper)
         {
             this._userManager = userManager;
+        }
+
+        public override async Task<IEnumerable<PhotoEntity>> All()
+        {
+            try
+            {
+                IEnumerable<PhotoEntity> photoEntities = (from photo in await this.dbSet.ToListAsync().ConfigureAwait(false)
+                                                          select new PhotoEntity
+                                                          (
+                                                              photo.Id,
+                                                              photo.Description,
+                                                              photo.Url,
+                                                              photo.Mode,
+                                                              photo.CreatedAt,
+                                                              photo.Updated,
+                                                              photo.likePhotoEntities,
+                                                              photo.dislikePhotoEntities,
+                                                              photo.commentEntities,
+                                                              photo.userEntity = new UserEntity(
+                                                                       photo.userEntity.Id,
+                                                                       photo.userEntity.FirstName,
+                                                                       photo.userEntity.LastName,
+                                                                       photo.userEntity.Gender,
+                                                                       photo.userEntity.UserName,
+                                                                       photo.userEntity.Email
+                                                                  )
+                                                          )).ToList();
+                //IEnumerable<PhotoEntity> photoEntities = this.dbSet.FromSqlInterpolated($"select Photo.Id, Photo.Description, Photo.Url, Photo.Mode, Photo.CreatedAt, Photo.Updated from Photo");
+                return photoEntities;
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Can't get all photos, Error Message = {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<Response<PhotoEntity>> createPhotoAsync(PhotoRequest request)
@@ -54,16 +90,24 @@ namespace PhotoApp.Infrastructure.Repositories
                 this._logger.LogError($"Can't create new photo, Error Message = {ex.Message}");
                 throw;
             }
-
         }
 
-        public async Task<Response<IEnumerable<PhotoEntity>>> getAllPhotosOfUser(string email)
+        public async Task<Response<IEnumerable<PhotoEntity>>> getAllPhotosOfUser(string userId)
         {
            try
             {
-                UserEntity userEntity = await this._userManager.FindByEmailAsync(email);
+                if (String.IsNullOrEmpty(userId))
+                {
+                    return new Response<IEnumerable<PhotoEntity>>()
+                    {
+                        Success = false,
+                        Message = "UserId invalid",
+                    };
+                }
 
-                if (userEntity == null || String.IsNullOrEmpty(email))
+                UserEntity userEntity = await this._userManager.FindByIdAsync(userId);
+
+                if (userEntity == null)
                 {
                     return new Response<IEnumerable<PhotoEntity>>()
                     {
@@ -74,12 +118,28 @@ namespace PhotoApp.Infrastructure.Repositories
 
                 //IEnumerable<PhotoEntity> photoEntities = await this.dbSet.Where(u => u.UserId.Equals(userEntity.Id)).ToListAsync();
 
-                IEnumerable<PhotoEntity> photoEntities = await this.dbSet.IgnoreAutoIncludes().ToListAsync();
+                //IEnumerable<PhotoEntity> photoEntities = from photo in this.dbSet.Where(u => u.UserId.Equals(userEntity.Id))
+                //select photo;
 
-                foreach (var item in photoEntities)
-                {
-                    System.Console.WriteLine(item);
-                }
+                /*IEnumerable<PhotoEntity> photoEntities = await (from photo in this.dbSet.Where(u => u.UserId.Equals(userEntity.Id)) 
+                                                         select new PhotoEntity { 
+                                                            Id = photo.Id,
+                                                            Description = photo.Description,
+                                                            Url = photo.Url,
+                                                            Mode = photo.Mode,
+                                                            CreatedAt = photo.CreatedAt,
+                                                            Updated = photo.Updated,
+                                                            likePhotoEntities = photo.likePhotoEntities,
+                                                            dislikePhotoEntities = photo.dislikePhotoEntities,
+                                                            commentEntities = photo.commentEntities,
+                                                         }).ToListAsync();*/
+
+#pragma warning disable CS8604 // Possible null reference argument.
+                IEnumerable<PhotoEntity> photoEntities = await (from photo in this.dbSet.Where(u => u.UserId.Equals(userEntity.Id))
+                                                       select new PhotoEntity(photo.Id, photo.Description, photo.Url, photo.Mode, photo.CreatedAt, photo.Updated
+                                                       , photo.likePhotoEntities, photo.dislikePhotoEntities, photo.commentEntities)).ToListAsync();
+#pragma warning restore CS8604 // Possible null reference argument.
+
                 return new Response<IEnumerable<PhotoEntity>>()
                 {
                     Success = true,
@@ -90,6 +150,50 @@ namespace PhotoApp.Infrastructure.Repositories
             catch (Exception ex)
             {
                 this._logger.LogError($"Can't get all photos of user, Error Message = {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<NormalResponse> updatePhotoAsync(PhotoRequest request)
+        {
+            try
+            {
+                if (request == null)
+                {
+                    return new NormalResponse
+                    {
+                        Success = false,
+                        Message = "request invalid",
+                    };
+                }
+
+                PhotoEntity photoEntity = await this.dbSet.FirstOrDefaultAsync(p => p.Id.Equals(Guid.Parse(request.Id)));
+
+                if (photoEntity == null)
+                {
+                    return new NormalResponse
+                    {
+                        Success = false,
+                        Message = "photo id invalid",
+                    };
+                }
+
+                photoEntity.Description = request.Description;
+                photoEntity.Url = request.Url;
+                photoEntity.Mode = request.Mode;
+                photoEntity.Updated = DateTime.UtcNow;
+
+                var result = this.dbSet.Update(photoEntity);
+
+                return new NormalResponse
+                {
+                    Success = true,
+                    Message = "update successfully!",
+                };
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Can't create new photo, Error Message = {ex.Message}");
                 throw;
             }
         }

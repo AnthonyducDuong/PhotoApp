@@ -33,16 +33,18 @@ namespace PhotoApp.Application
 
             // Entity Framework
             services.AddDbContext<ApplicationDbContext>(option => {
-                option.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
-                    sqlServerOptionsAction: sqlOptions =>
-                    {
-                        sqlOptions.EnableRetryOnFailure(
-                            maxRetryCount: 10,
-                            maxRetryDelay: TimeSpan.FromSeconds(5),
-                            /*errorCodesToAdd: null*/
-                            errorNumbersToAdd: null
-                        );
-                    });
+                option
+                    .UseLazyLoadingProxies()
+                    .UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+                                sqlServerOptionsAction: sqlOptions =>
+                                {
+                                    sqlOptions.EnableRetryOnFailure(
+                                        maxRetryCount: 10,
+                                        maxRetryDelay: TimeSpan.FromSeconds(5),
+                                        /*errorCodesToAdd: null*/
+                                        errorNumbersToAdd: null
+                                    );
+                                }).EnableSensitiveDataLogging();
             });
 
             // For Identity
