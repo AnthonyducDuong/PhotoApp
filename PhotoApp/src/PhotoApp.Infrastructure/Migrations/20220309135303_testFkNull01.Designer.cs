@@ -12,8 +12,8 @@ using PhotoApp.Infrastructure.Contexts;
 namespace PhotoApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220225025255_create")]
-    partial class create
+    [Migration("20220309135303_testFkNull01")]
+    partial class testFkNull01
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -127,13 +127,13 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.CommentEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.CommentEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CommentId")
+                    b.Property<Guid?>("CommentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
@@ -149,7 +149,7 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("UserID")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -158,12 +158,12 @@ namespace PhotoApp.Infrastructure.Migrations
 
                     b.HasIndex("PhotoId");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Comment", (string)null);
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.DislikeCommentEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.DislikeCommentEntity", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -178,7 +178,7 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.ToTable("DislikeComment", (string)null);
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.DislikePhotoEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.DislikePhotoEntity", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -193,7 +193,7 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.ToTable("DislikePhoto", (string)null);
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.LikeCommentEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.LikeCommentEntity", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -208,7 +208,7 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.ToTable("LikeComment", (string)null);
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.LikePhotoEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.LikePhotoEntity", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -223,7 +223,7 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.ToTable("LikePhoto", (string)null);
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.PhotoEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.PhotoEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -238,7 +238,9 @@ namespace PhotoApp.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Mode")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -259,7 +261,7 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.ToTable("Photo", (string)null);
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.RoleEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.RoleEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -289,21 +291,21 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("26f5b9ea-0f89-4050-b2b8-be906d6914ce"),
+                            Id = new Guid("892ac795-3f72-4ea8-88e3-138b41eec490"),
                             ConcurrencyStamp = "1",
                             Name = "ADMIN",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = new Guid("7fd2fd92-ade5-44b0-af6a-65d94fab4f2e"),
+                            Id = new Guid("5227d0bc-94de-4b4b-a30e-d9c99e587dda"),
                             ConcurrencyStamp = "2",
                             Name = "USER",
                             NormalizedName = "User"
                         });
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.UserEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.UserEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -329,7 +331,9 @@ namespace PhotoApp.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Gender")
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("Male");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -371,6 +375,10 @@ namespace PhotoApp.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -379,12 +387,16 @@ namespace PhotoApp.Infrastructure.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
+                    b.HasIndex("UserName")
+                        .IsUnique()
+                        .HasFilter("[UserName] IS NOT NULL");
+
                     b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.RoleEntity", null)
+                    b.HasOne("PhotoApp.Domain.Entities.RoleEntity", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -393,7 +405,7 @@ namespace PhotoApp.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.UserEntity", null)
+                    b.HasOne("PhotoApp.Domain.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -402,7 +414,7 @@ namespace PhotoApp.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.UserEntity", null)
+                    b.HasOne("PhotoApp.Domain.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -411,13 +423,13 @@ namespace PhotoApp.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.RoleEntity", null)
+                    b.HasOne("PhotoApp.Domain.Entities.RoleEntity", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PhotoApp.Infrastructure.Entities.UserEntity", null)
+                    b.HasOne("PhotoApp.Domain.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -426,32 +438,31 @@ namespace PhotoApp.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.UserEntity", null)
+                    b.HasOne("PhotoApp.Domain.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.CommentEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.CommentEntity", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.CommentEntity", "commentEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.CommentEntity", "commentEntity")
                         .WithMany("commentEntities")
                         .HasForeignKey("CommentId")
                         .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
                         .HasConstraintName("Fk_Comment_Comment");
 
-                    b.HasOne("PhotoApp.Infrastructure.Entities.PhotoEntity", "photoEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.PhotoEntity", "photoEntity")
                         .WithMany("commentEntities")
                         .HasForeignKey("PhotoId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_Comment_Photo");
 
-                    b.HasOne("PhotoApp.Infrastructure.Entities.UserEntity", "userEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.UserEntity", "userEntity")
                         .WithMany("commentEntities")
-                        .HasForeignKey("UserID")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_Comment_User");
@@ -463,93 +474,93 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.Navigation("userEntity");
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.DislikeCommentEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.DislikeCommentEntity", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.CommentEntity", "CommentEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.CommentEntity", "commentEntity")
                         .WithMany("dislikeCommentEntities")
                         .HasForeignKey("CommentId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_DislikeComment_Comment");
 
-                    b.HasOne("PhotoApp.Infrastructure.Entities.UserEntity", "UserEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.UserEntity", "userEntity")
                         .WithMany("dislikeCommentEntities")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_DislikeComment_User");
 
-                    b.Navigation("CommentEntity");
+                    b.Navigation("commentEntity");
 
-                    b.Navigation("UserEntity");
+                    b.Navigation("userEntity");
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.DislikePhotoEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.DislikePhotoEntity", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.PhotoEntity", "PhotoEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.PhotoEntity", "photoEntity")
                         .WithMany("dislikePhotoEntities")
                         .HasForeignKey("PhotoId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_DislikePhoto_Photo");
 
-                    b.HasOne("PhotoApp.Infrastructure.Entities.UserEntity", "UserEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.UserEntity", "userEntity")
                         .WithMany("dislikePhotoEntities")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_DislikePhoto_User");
 
-                    b.Navigation("PhotoEntity");
+                    b.Navigation("photoEntity");
 
-                    b.Navigation("UserEntity");
+                    b.Navigation("userEntity");
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.LikeCommentEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.LikeCommentEntity", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.CommentEntity", "CommentEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.CommentEntity", "commentEntity")
                         .WithMany("likeCommentEntities")
                         .HasForeignKey("CommentId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_LikeComment_Comment");
 
-                    b.HasOne("PhotoApp.Infrastructure.Entities.UserEntity", "UserEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.UserEntity", "userEntity")
                         .WithMany("likeCommentEntities")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_LikeComment_User");
 
-                    b.Navigation("CommentEntity");
+                    b.Navigation("commentEntity");
 
-                    b.Navigation("UserEntity");
+                    b.Navigation("userEntity");
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.LikePhotoEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.LikePhotoEntity", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.PhotoEntity", "PhotoEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.PhotoEntity", "photoEntity")
                         .WithMany("likePhotoEntities")
                         .HasForeignKey("PhotoId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_LikePhoto_Photo");
 
-                    b.HasOne("PhotoApp.Infrastructure.Entities.UserEntity", "UserEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.UserEntity", "userEntity")
                         .WithMany("likePhotoEntities")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_LikePhoto_User");
 
-                    b.Navigation("PhotoEntity");
+                    b.Navigation("photoEntity");
 
-                    b.Navigation("UserEntity");
+                    b.Navigation("userEntity");
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.PhotoEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.PhotoEntity", b =>
                 {
-                    b.HasOne("PhotoApp.Infrastructure.Entities.UserEntity", "userEntity")
+                    b.HasOne("PhotoApp.Domain.Entities.UserEntity", "userEntity")
                         .WithMany("photoEntities")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -559,7 +570,7 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.Navigation("userEntity");
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.CommentEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.CommentEntity", b =>
                 {
                     b.Navigation("commentEntities");
 
@@ -568,7 +579,7 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.Navigation("likeCommentEntities");
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.PhotoEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.PhotoEntity", b =>
                 {
                     b.Navigation("commentEntities");
 
@@ -577,7 +588,7 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.Navigation("likePhotoEntities");
                 });
 
-            modelBuilder.Entity("PhotoApp.Infrastructure.Entities.UserEntity", b =>
+            modelBuilder.Entity("PhotoApp.Domain.Entities.UserEntity", b =>
                 {
                     b.Navigation("commentEntities");
 

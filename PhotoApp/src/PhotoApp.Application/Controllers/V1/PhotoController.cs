@@ -105,6 +105,7 @@ namespace PhotoApp.Application.Controllers.V1
         /// Get all photos in system
         /// </summary>
         /// <returns></returns>
+        /// <remarks>- https://localhost:7109/api/photoappservice/v1/photo</remarks>
         [HttpGet]
         public async Task<IActionResult> All()
         {
@@ -169,6 +170,12 @@ namespace PhotoApp.Application.Controllers.V1
             }
         }
 
+        /// <summary>
+        /// Update photo
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <remarks>- https://localhost:7109/api/photoappservice/v1/photo</remarks>
         [HttpPut()]
         public async Task<IActionResult> Update([FromBody] PhotoRequest request)
         {
@@ -183,6 +190,39 @@ namespace PhotoApp.Application.Controllers.V1
                 }
                 this._unitOfWork.Dispose();
                 return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                this._unitOfWork.Dispose();
+                return BadRequest(new Response<Exception>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                });
+            }
+        }
+
+        /// <summary>
+        /// Delete photo by id
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        /// <remarks>- https://localhost:7109/api/photoappservice/v1/photo/{Id}</remarks>
+        [HttpDelete("{Id}")]
+        public async Task<IActionResult> Delete(string Id)
+        {
+            try
+            {
+                bool response = await this._unitOfWork.photoRepository.Delete(Id);
+
+                if (response)
+                {
+                    await this._unitOfWork.CompleteAsync();
+                    return Ok();
+                }
+
+                this._unitOfWork.Dispose();
+                return BadRequest(false);
             }
             catch (Exception ex)
             {

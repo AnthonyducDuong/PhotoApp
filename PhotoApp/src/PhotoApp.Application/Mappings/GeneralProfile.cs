@@ -10,6 +10,7 @@ namespace PhotoApp.Application.Mappings
         {
             this.CreateMap<UserEntity, RegisterRequest>().ReverseMap();
             this.CreateMap<PhotoEntity, PhotoRequest>().ReverseMap();
+            this.CreateMap<CommentEntity, CommentRequest>().ReverseMap();
         }
     }
 }

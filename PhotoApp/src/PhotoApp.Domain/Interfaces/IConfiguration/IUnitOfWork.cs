@@ -12,6 +12,8 @@ namespace PhotoApp.Domain.Interfaces.IConfiguration
         IUserRepository userRepository { get; }
         IPhotoRepository photoRepository { get; }
 
+        ICommentRepository commentRepository { get; }
+
         Task CompleteAsync();
 
         void Dispose();

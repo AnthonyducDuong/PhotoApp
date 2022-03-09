@@ -28,6 +28,7 @@ namespace PhotoApp.Infrastructure.Repositories
             this._userManager = userManager;
         }
 
+        // Coi lại có í tưởng xử lý
         public override async Task<IEnumerable<PhotoEntity>> All()
         {
             try
@@ -53,12 +54,40 @@ namespace PhotoApp.Infrastructure.Repositories
                                                                        photo.userEntity.Email
                                                                   )
                                                           )).ToList();
+
                 //IEnumerable<PhotoEntity> photoEntities = this.dbSet.FromSqlInterpolated($"select Photo.Id, Photo.Description, Photo.Url, Photo.Mode, Photo.CreatedAt, Photo.Updated from Photo");
                 return photoEntities;
             }
             catch (Exception ex)
             {
                 this._logger.LogError($"Can't get all photos, Error Message = {ex.Message}");
+                throw;
+            }
+        }
+
+        public override async Task<bool> Delete(string Id)
+        {
+            try
+            {
+                if (String.IsNullOrEmpty(Id))
+                {
+                    return false;
+                }
+
+                PhotoEntity photoEntity = await this.dbSet.FirstOrDefaultAsync(p => p.Id.Equals(Guid.Parse(Id)));
+
+                if (photoEntity == null)
+                {
+                    return false;
+                }
+
+                var delete = this.dbSet.Remove(photoEntity);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Can't delete photo with id = {Id}, Error Message = {ex.Message}");
                 throw;
             }
         }

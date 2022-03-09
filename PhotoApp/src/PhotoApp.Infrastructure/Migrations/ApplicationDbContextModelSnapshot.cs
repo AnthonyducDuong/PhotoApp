@@ -131,7 +131,7 @@ namespace PhotoApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CommentId")
+                    b.Property<Guid?>("CommentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
@@ -147,7 +147,7 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("UserID")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -156,7 +156,7 @@ namespace PhotoApp.Infrastructure.Migrations
 
                     b.HasIndex("PhotoId");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Comment", (string)null);
                 });
@@ -289,14 +289,14 @@ namespace PhotoApp.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("1977fc30-83ad-4f1e-88c3-73cda75aed10"),
+                            Id = new Guid("892ac795-3f72-4ea8-88e3-138b41eec490"),
                             ConcurrencyStamp = "1",
                             Name = "ADMIN",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = new Guid("13f8230c-f143-45ec-a2ce-8080b5eb7b51"),
+                            Id = new Guid("5227d0bc-94de-4b4b-a30e-d9c99e587dda"),
                             ConcurrencyStamp = "2",
                             Name = "USER",
                             NormalizedName = "User"
@@ -449,7 +449,6 @@ namespace PhotoApp.Infrastructure.Migrations
                         .WithMany("commentEntities")
                         .HasForeignKey("CommentId")
                         .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
                         .HasConstraintName("Fk_Comment_Comment");
 
                     b.HasOne("PhotoApp.Domain.Entities.PhotoEntity", "photoEntity")
@@ -461,7 +460,7 @@ namespace PhotoApp.Infrastructure.Migrations
 
                     b.HasOne("PhotoApp.Domain.Entities.UserEntity", "userEntity")
                         .WithMany("commentEntities")
-                        .HasForeignKey("UserID")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("Fk_Comment_User");

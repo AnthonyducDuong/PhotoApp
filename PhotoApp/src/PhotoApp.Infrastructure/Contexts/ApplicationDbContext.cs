@@ -149,7 +149,7 @@ namespace PhotoApp.Infrastructure.Contexts
                 // User Entity
                 entity.HasOne<UserEntity>(u => u.userEntity)
                       .WithMany(c => c.commentEntities)
-                      .HasForeignKey(u => u.UserID)
+                      .HasForeignKey(u => u.UserId)
                       .HasConstraintName("Fk_Comment_User")
                       .OnDelete(DeleteBehavior.NoAction);
                 // Photo Entity
@@ -163,6 +163,7 @@ namespace PhotoApp.Infrastructure.Contexts
                       .WithMany(c => c.commentEntities)
                       .HasForeignKey(ce => ce.CommentId)
                       .HasConstraintName("Fk_Comment_Comment")
+                      .IsRequired(false)
                       .OnDelete(DeleteBehavior.NoAction);
             });
 

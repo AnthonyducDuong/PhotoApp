@@ -35,13 +35,13 @@ namespace PhotoApp.Domain.Entities
         public virtual IList<DislikeCommentEntity>? dislikeCommentEntities { get; set; }
 
         // Foreign Key
-        public Guid UserID { get; set; }
+        public Guid UserId { get; set; }
         public virtual UserEntity? userEntity { get; set; }
 
         public Guid PhotoId { get; set; }
         public virtual PhotoEntity? photoEntity { get; set; }
 
-        public Guid CommentId { get; set; }
+        public Guid? CommentId { get; set; }
         public virtual CommentEntity? commentEntity { get; set; }
     }
 }

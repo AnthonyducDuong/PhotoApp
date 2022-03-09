@@ -26,6 +26,8 @@ namespace PhotoApp.Infrastructure.Configuration
 
         public IPhotoRepository photoRepository { get; private set; }
 
+        public ICommentRepository commentRepository { get; private set; }
+
         public UnitOfWork(ApplicationDbContext applicationDbContext, ILoggerFactory loggerFactory
             , IMapper mapper, UserManager<UserEntity> userManager, IConfiguration configuration
             , IMailService mailService, IJwtService jwtService)
@@ -47,6 +49,7 @@ namespace PhotoApp.Infrastructure.Configuration
                 this._userManager, this._configuration, this._mailService, this._mapper, this._jwtService);
 
             this.photoRepository = new PhotoRepository(applicationDbContext, this._logger, this._mapper, this._userManager);
+            this.commentRepository = new CommentRepository(applicationDbContext, this._logger, this._mapper, this._userManager);
         }
 
 
