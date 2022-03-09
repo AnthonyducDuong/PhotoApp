@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using PhotoApp.Domain.Interfaces.IRepositories.IGeneric;
+using PhotoApp.Domain.Interfaces.IRepositories.IGenericRepository;
 using PhotoApp.Infrastructure.Configuration;
 using PhotoApp.Infrastructure.Contexts;
 using System;

@@ -1,6 +1,6 @@
 ﻿
 using PhotoApp.Domain.Entities;
-using PhotoApp.Domain.Interfaces.IRepositories.IGeneric;
+using PhotoApp.Domain.Interfaces.IRepositories.IGenericRepository;
 using PhotoApp.Domain.Request;
 using PhotoApp.Domain.Response;
 using PhotoApp.Domain.Wrappers;

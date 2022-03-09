@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PhotoApp.Domain.Interfaces.IRepositories.IGeneric
+namespace PhotoApp.Domain.Interfaces.IRepositories.IGenericRepository
 {
     public interface IGenericRepository<TEntity> where TEntity : class
     {
