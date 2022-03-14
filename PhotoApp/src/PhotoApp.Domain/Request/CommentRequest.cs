@@ -10,7 +10,7 @@ namespace PhotoApp.Domain.Request
 {
     public class CommentRequest
     {
-        public Guid Id { get; init; }
+        public string? Id { get; init; }
 
         [Required(ErrorMessage = "Comment is invalid")]
         [DataType(DataType.Text)]

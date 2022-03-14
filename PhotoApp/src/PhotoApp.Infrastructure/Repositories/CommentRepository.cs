@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using PhotoApp.Domain.Entities;
+using PhotoApp.Domain.Enums;
 using PhotoApp.Domain.Interfaces.IRepositories;
 using PhotoApp.Domain.Request;
+using PhotoApp.Domain.Response;
 using PhotoApp.Domain.Wrappers;
 using PhotoApp.Infrastructure.Contexts;
 using PhotoApp.Infrastructure.Repositories.Generic;
@@ -24,6 +26,67 @@ namespace PhotoApp.Infrastructure.Repositories
             : base(applicationDbContext, logger, mapper)
         {
             this._userManager = userManager;
+        }
+
+        public override async Task<bool> Delete(string Id)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(Id))
+                {
+                    return false;
+                }
+
+                CommentEntity commentEntity = this.dbSet.FirstOrDefault(c => c.Id.Equals(Guid.Parse(Id)));
+
+                if (commentEntity == null)
+                {
+                    return false;
+                }
+
+                if (commentEntity.commentEntities.Count() == 0)
+                {
+                    this.dbSet.Remove(commentEntity);
+                }
+                else
+                {
+                    this.remove(commentEntity);
+                }
+                //this.remove(commentEntity);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Can't delete comment, Error Message = {ex.Message}");
+                throw;
+            }
+        }
+
+        /*public override Task<CommentEntity?> GetById(string Id)
+        {
+            CommentEntity commentExisted = this.dbSet.FirstOrDefault(c => c.Id.Equals(Guid.Parse(Id)));
+
+            if (commentExisted == null)
+            {
+
+            }
+        }*/
+
+        private void remove(CommentEntity commentEntity)
+        {
+            foreach (var item in commentEntity.commentEntities)
+            {
+                if (item.commentEntities.Count() == 0)
+                {
+                    this.dbSet.Remove(item);
+                }
+                else
+                {
+                    remove(item); 
+                }
+            }
+            this.dbSet.Remove(commentEntity);
         }
 
         public async Task<Response<CommentRequest>> createCommentAsync(CommentRequest request)
@@ -94,6 +157,48 @@ namespace PhotoApp.Infrastructure.Repositories
             catch (Exception ex)
             {
                 this._logger.LogError($"Can't create new comment, Error Message = {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<NormalResponse> updateCommentAsync(CommentUpdateRequest request)
+        {
+            try
+            {
+                if (request == null)
+                {
+                    return new NormalResponse
+                    {
+                        Success = false,
+                        Message = "request invalid",
+                    };
+                }
+
+                CommentEntity commentEntity = this.dbSet.FirstOrDefault(c => c.Id.Equals(Guid.Parse(request.Id)));
+
+                if (commentEntity == null)
+                {
+                    return new NormalResponse
+                    {
+                        Success = false,
+                        Message = "request invalid",
+                    };
+                }
+
+                commentEntity.Content = request.Content;
+                commentEntity.Status = StatusCommentEnums.EDITED;
+
+                this.dbSet.Update(commentEntity);
+
+                return new NormalResponse
+                {
+                    Success = true,
+                    Message = "Update comment successfully!",
+                };
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError($"Can't update new comment, Error Message = {ex.Message}");
                 throw;
             }
         }
